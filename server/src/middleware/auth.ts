@@ -1,11 +1,13 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-// Extend Express Request type to include user
+// Extend Express User type
 declare global {
   namespace Express {
-    interface Request {
-      user?: any;
+    interface User {
+      id: string;
+      email: string;
+      isAdmin: boolean;
     }
   }
 }
@@ -29,7 +31,7 @@ export const isAuthenticated = (
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || "your-secret-key"
-    );
+    ) as Express.User;
     req.user = decoded;
     next();
   } catch (error) {
@@ -38,7 +40,7 @@ export const isAuthenticated = (
 };
 
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user.isAdmin) {
+  if (!req.user?.isAdmin) {
     return res
       .status(403)
       .json({ message: "Access denied, admin privileges required" });

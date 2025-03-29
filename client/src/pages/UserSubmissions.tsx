@@ -1,21 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getUserSubmissions } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getUserSubmissions } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Submission {
   _id: string;
   questionId: {
     _id: string;
     title: string;
-    difficulty: 'Easy' | 'Medium' | 'Hard';
+    difficulty: "Easy" | "Medium" | "Hard";
   };
   jobId: {
     _id: string;
     title: string;
     company: string;
   };
-  status: 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Runtime Error' | 'Compilation Error';
+  status:
+    | "Accepted"
+    | "Wrong Answer"
+    | "Time Limit Exceeded"
+    | "Runtime Error"
+    | "Compilation Error";
   language: string;
   createdAt: string;
 }
@@ -29,13 +34,13 @@ export default function UserSubmissions() {
   useEffect(() => {
     const fetchSubmissions = async () => {
       if (!user) return;
-      
+
       try {
         const data = await getUserSubmissions(user.id);
         setSubmissions(data);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch submissions. Please try again later.');
+        setError("Failed to fetch submissions. Please try again later.");
         setLoading(false);
       }
     };
@@ -60,21 +65,24 @@ export default function UserSubmissions() {
   }
 
   const statusColors = {
-    'Accepted': 'bg-green-100 text-green-800',
-    'Wrong Answer': 'bg-red-100 text-red-800',
-    'Time Limit Exceeded': 'bg-orange-100 text-orange-800',
-    'Runtime Error': 'bg-red-100 text-red-800',
-    'Compilation Error': 'bg-red-100 text-red-800'
+    Accepted: "bg-green-100 text-green-800",
+    "Wrong Answer": "bg-red-100 text-red-800",
+    "Time Limit Exceeded": "bg-orange-100 text-orange-800",
+    "Runtime Error": "bg-red-100 text-red-800",
+    "Compilation Error": "bg-red-100 text-red-800",
   };
 
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-800 mb-6">My Submissions</h1>
-      
+
       {submissions.length === 0 ? (
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
           <p>You haven't submitted any solutions yet.</p>
-          <Link to="/" className="text-indigo-600 hover:text-indigo-800 mt-2 inline-block">
+          <Link
+            to="/"
+            className="text-indigo-600 hover:text-indigo-800 mt-2 inline-block"
+          >
             Browse Jobs to Start
           </Link>
         </div>
@@ -119,11 +127,19 @@ export default function UserSubmissions() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{submission.jobId.title}</div>
-                    <div className="text-sm text-gray-500">{submission.jobId.company}</div>
+                    <div className="text-sm text-gray-900">
+                      {submission.jobId.title}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {submission.jobId.company}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[submission.status]}`}>
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        statusColors[submission.status]
+                      }`}
+                    >
                       {submission.status}
                     </span>
                   </td>
@@ -134,7 +150,7 @@ export default function UserSubmissions() {
                     {new Date(submission.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link 
+                    <Link
                       to={`/interview/${submission.jobId._id}/${submission.questionId._id}`}
                       className="text-indigo-600 hover:text-indigo-900"
                     >

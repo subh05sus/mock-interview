@@ -34,7 +34,7 @@ export default function QuestionCard({ question, jobId }: QuestionCardProps) {
       <div className="mt-6">
         <Link
           to={`/interview/${jobId}/${question._id}`}
-          className="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors"
+          className="inline-block bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-700 transition-colors"
         >
           Start Interview
         </Link>

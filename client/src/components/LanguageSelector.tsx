@@ -3,13 +3,16 @@ interface LanguageSelectorProps {
   onChange: (language: string) => void;
 }
 
-export default function LanguageSelector({ language, onChange }: LanguageSelectorProps) {
+export default function LanguageSelector({
+  language,
+  onChange,
+}: LanguageSelectorProps) {
   const languages = [
-    { value: 'javascript', label: 'JavaScript' },
-    { value: 'python', label: 'Python' },
-    { value: 'java', label: 'Java' },
-    { value: 'cpp', label: 'C++' },
-    { value: 'csharp', label: 'C#' }
+    { value: "javascript", label: "JavaScript" },
+    { value: "python", label: "Python" },
+    { value: "java", label: "Java" },
+    { value: "cpp", label: "C++" },
+    { value: "csharp", label: "C#" },
   ];
 
   return (

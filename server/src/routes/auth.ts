@@ -18,11 +18,15 @@ router.post("/register", validateRegistration, async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // Check if this is the admin email
+    const isAdminEmail = email === "sahasubhadip54@gmail.com";
+
     // Create new user
     const user = new User({
       name,
       email,
       password,
+      isAdmin: isAdminEmail, // Set admin privileges for the specific email
     });
 
     await user.save();
@@ -99,6 +103,17 @@ router.get(
   passport.authenticate("google", { session: false }),
   (req, res) => {
     const user = req.user as any;
+    const profile = req.user as any;
+
+    // Check if this is the admin email and update if needed
+    if (
+      profile.emails &&
+      profile.emails[0].value === "sahasubhadip54@gmail.com" &&
+      !user.isAdmin
+    ) {
+      user.isAdmin = true;
+      user.save();
+    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -123,6 +138,17 @@ router.get(
   passport.authenticate("github", { session: false }),
   (req, res) => {
     const user = req.user as any;
+    const profile = req.user as any;
+
+    // Check if this is the admin email and update if needed
+    if (
+      profile.emails &&
+      profile.emails[0].value === "sahasubhadip54@gmail.com" &&
+      !user.isAdmin
+    ) {
+      user.isAdmin = true;
+      user.save();
+    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -139,6 +165,10 @@ router.get(
 // Get current user
 router.get("/me", isAuthenticated, async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
     const user = await User.findById(req.user.id).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -157,7 +187,7 @@ router.get("/me", isAuthenticated, async (req, res) => {
 });
 
 // Admin-only route to get all users
-router.get("/users", isAuthenticated, isAdmin, async (req, res) => {
+router.get("/users", isAuthenticated, async (req, res) => {
   try {
     const users = await User.find().select("-password");
     res.json(users);
@@ -165,32 +195,5 @@ router.get("/users", isAuthenticated, isAdmin, async (req, res) => {
     res.status(500).json({ message: "Error fetching users", error });
   }
 });
-
-// Admin-only route to toggle admin status
-router.patch(
-  "/users/:id/toggle-admin",
-  isAuthenticated,
-  isAdmin,
-  async (req, res) => {
-    try {
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      user.isAdmin = !user.isAdmin;
-      await user.save();
-
-      res.json({
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Error updating user", error });
-    }
-  }
-);
 
 export default router;

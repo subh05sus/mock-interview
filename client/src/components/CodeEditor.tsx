@@ -12,7 +12,7 @@ export default function CodeEditor({
   language,
   value,
   onChange,
-  height = "70vh",
+  height = "50vh",
 }: CodeEditorProps) {
   const [theme, setTheme] = useState("vs-dark");
 
@@ -30,11 +30,11 @@ export default function CodeEditor({
 
   return (
     <div className="border rounded-md overflow-hidden">
-      <div className="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
+      <div className="bg-slate-800 text-white px-4 py-2 flex justify-between items-center">
         <span className="font-medium">{language}</span>
         <button
           onClick={() => setTheme(theme === "vs-dark" ? "light" : "vs-dark")}
-          className="text-sm bg-gray-700 px-2 py-1 rounded hover:bg-gray-600"
+          className="text-sm bg-slate-700 px-2 py-1 rounded hover:bg-slate-600"
         >
           Toggle Theme
         </button>

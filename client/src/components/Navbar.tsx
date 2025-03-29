@@ -2,12 +2,19 @@
 
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <nav className="bg-indigo-600 text-white shadow-md">
+    <nav
+      className={`${
+        theme === "dark" ? "bg-slate-800" : "bg-slate-600"
+      } text-white shadow-md`}
+    >
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
           AI Mock Interview
@@ -33,7 +40,9 @@ export default function Navbar() {
                 <span>Hi, {user?.name}</span>
                 <button
                   onClick={logout}
-                  className="bg-indigo-700 px-3 py-1 rounded hover:bg-indigo-800"
+                  className={`${
+                    theme === "dark" ? "bg-slate-700" : "bg-slate-700"
+                  } px-3 py-1 rounded hover:bg-slate-800`}
                 >
                   Logout
                 </button>
@@ -43,18 +52,35 @@ export default function Navbar() {
             <div className="flex items-center space-x-2">
               <Link
                 to="/login"
-                className="bg-indigo-700 px-3 py-1 rounded hover:bg-indigo-800"
+                className={`${
+                  theme === "dark" ? "bg-slate-700" : "bg-slate-700"
+                } px-3 py-1 rounded hover:bg-slate-800`}
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="bg-white text-indigo-600 px-3 py-1 rounded hover:bg-indigo-100"
+                className="bg-white text-indigo-600 px-3 py-1 rounded hover:bg-slate-100"
               >
                 Register
               </Link>
             </div>
           )}
+
+          {/* Theme toggle button */}
+          <button
+            onClick={toggleTheme}
+            className={`p-2 rounded-full ${
+              theme === "dark" ? "bg-slate-700" : "bg-slate-700"
+            }`}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? (
+              <SunIcon className="h-5 w-5" />
+            ) : (
+              <MoonIcon className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
     </nav>
