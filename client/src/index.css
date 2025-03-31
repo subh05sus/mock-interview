@@ -39,6 +39,14 @@ code {
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+    --success: 120 100% 30%;
+    --success-foreground: 0 0% 98%;
+    --warning: 40 100% 30%;
+    --warning-foreground: 0 0% 98%;
+    --info: 240 5.9% 10%;
+    --info-foreground: 0 0% 98%;
+    --error: 0 100% 50%;
+    --error-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;

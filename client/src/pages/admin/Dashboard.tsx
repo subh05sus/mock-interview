@@ -74,16 +74,6 @@ interface Job {
   questions: any[];
 }
 
-interface Question {
-  _id: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  jobId: string;
-  slug: string;
-  createdAt: string;
-}
-
 export default function AdminDashboard() {
   const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -353,181 +343,198 @@ export default function AdminDashboard() {
         <TabsContent value="jobs">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Job Listings</h2>
-            <Dialog open={jobFormOpen} onOpenChange={setJobFormOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  onClick={() => {
-                    setSelectedJob(null);
-                    resetJobForm();
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Add New Job
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                  <DialogTitle>
-                    {selectedJob ? "Edit Job" : "Create New Job"}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {selectedJob
-                      ? "Update the job details below."
-                      : "Fill in the job details to create a new job listing."}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Job Title</Label>
-                      <Input
-                        id="title"
-                        value={jobForm.title}
-                        onChange={(e) =>
-                          setJobForm({ ...jobForm, title: e.target.value })
-                        }
-                        placeholder="e.g. Frontend Developer"
-                      />
+            <div className="flex gap-2 items-center">
+              <Dialog open={jobFormOpen} onOpenChange={setJobFormOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      setSelectedJob(null);
+                      resetJobForm();
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add New Job
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {selectedJob ? "Edit Job" : "Create New Job"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {selectedJob
+                        ? "Update the job details below."
+                        : "Fill in the job details to create a new job listing."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="title">Job Title</Label>
+                        <Input
+                          id="title"
+                          value={jobForm.title}
+                          onChange={(e) =>
+                            setJobForm({ ...jobForm, title: e.target.value })
+                          }
+                          placeholder="e.g. Frontend Developer"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="company">Company</Label>
+                        <Input
+                          id="company"
+                          value={jobForm.company}
+                          onChange={(e) =>
+                            setJobForm({ ...jobForm, company: e.target.value })
+                          }
+                          placeholder="e.g. Acme Inc."
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Company</Label>
-                      <Input
-                        id="company"
-                        value={jobForm.company}
-                        onChange={(e) =>
-                          setJobForm({ ...jobForm, company: e.target.value })
-                        }
-                        placeholder="e.g. Acme Inc."
-                      />
-                    </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Job Description</Label>
-                    <Textarea
-                      id="description"
-                      value={jobForm.description}
-                      onChange={(e) =>
-                        setJobForm({ ...jobForm, description: e.target.value })
-                      }
-                      placeholder="Describe the job role and responsibilities"
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="requiredSkills">
-                      Required Skills (comma separated)
-                    </Label>
-                    <Input
-                      id="requiredSkills"
-                      value={jobForm.requiredSkills}
-                      onChange={(e) =>
-                        setJobForm({
-                          ...jobForm,
-                          requiredSkills: e.target.value,
-                        })
-                      }
-                      placeholder="e.g. JavaScript, React, Node.js"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="position">Position</Label>
-                      <Input
-                        id="position"
-                        value={jobForm.position}
-                        onChange={(e) =>
-                          setJobForm({ ...jobForm, position: e.target.value })
-                        }
-                        placeholder="e.g. Senior Developer"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        value={jobForm.location}
-                        onChange={(e) =>
-                          setJobForm({ ...jobForm, location: e.target.value })
-                        }
-                        placeholder="e.g. Remote, New York"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="salaryRange">Salary Range</Label>
-                      <Input
-                        id="salaryRange"
-                        value={jobForm.salaryRange}
+                      <Label htmlFor="description">Job Description</Label>
+                      <Textarea
+                        id="description"
+                        value={jobForm.description}
                         onChange={(e) =>
                           setJobForm({
                             ...jobForm,
-                            salaryRange: e.target.value,
+                            description: e.target.value,
                           })
                         }
-                        placeholder="e.g. $80,000 - $120,000"
+                        placeholder="Describe the job role and responsibilities"
+                        rows={4}
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="jobType">Job Type</Label>
+                      <Label htmlFor="requiredSkills">
+                        Required Skills (comma separated)
+                      </Label>
+                      <Input
+                        id="requiredSkills"
+                        value={jobForm.requiredSkills}
+                        onChange={(e) =>
+                          setJobForm({
+                            ...jobForm,
+                            requiredSkills: e.target.value,
+                          })
+                        }
+                        placeholder="e.g. JavaScript, React, Node.js"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="position">Position</Label>
+                        <Input
+                          id="position"
+                          value={jobForm.position}
+                          onChange={(e) =>
+                            setJobForm({ ...jobForm, position: e.target.value })
+                          }
+                          placeholder="e.g. Senior Developer"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={jobForm.location}
+                          onChange={(e) =>
+                            setJobForm({ ...jobForm, location: e.target.value })
+                          }
+                          placeholder="e.g. Remote, New York"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="salaryRange">Salary Range</Label>
+                        <Input
+                          id="salaryRange"
+                          value={jobForm.salaryRange}
+                          onChange={(e) =>
+                            setJobForm({
+                              ...jobForm,
+                              salaryRange: e.target.value,
+                            })
+                          }
+                          placeholder="e.g. $80,000 - $120,000"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="jobType">Job Type</Label>
+                        <Select
+                          value={jobForm.jobType}
+                          onValueChange={(value) =>
+                            setJobForm({ ...jobForm, jobType: value })
+                          }
+                        >
+                          <SelectTrigger id="jobType">
+                            <SelectValue placeholder="Select job type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Full-time">Full-time</SelectItem>
+                            <SelectItem value="Part-time">Part-time</SelectItem>
+                            <SelectItem value="Contract">Contract</SelectItem>
+                            <SelectItem value="Internship">
+                              Internship
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="difficulty">Difficulty Level</Label>
                       <Select
-                        value={jobForm.jobType}
+                        value={jobForm.difficulty}
                         onValueChange={(value) =>
-                          setJobForm({ ...jobForm, jobType: value })
+                          setJobForm({ ...jobForm, difficulty: value })
                         }
                       >
-                        <SelectTrigger id="jobType">
-                          <SelectValue placeholder="Select job type" />
+                        <SelectTrigger id="difficulty">
+                          <SelectValue placeholder="Select difficulty" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Full-time">Full-time</SelectItem>
-                          <SelectItem value="Part-time">Part-time</SelectItem>
-                          <SelectItem value="Contract">Contract</SelectItem>
-                          <SelectItem value="Internship">Internship</SelectItem>
+                          <SelectItem value="Entry Level">
+                            Entry Level
+                          </SelectItem>
+                          <SelectItem value="Mid Level">Mid Level</SelectItem>
+                          <SelectItem value="Senior Level">
+                            Senior Level
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="difficulty">Difficulty Level</Label>
-                    <Select
-                      value={jobForm.difficulty}
-                      onValueChange={(value) =>
-                        setJobForm({ ...jobForm, difficulty: value })
-                      }
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setJobFormOpen(false)}
                     >
-                      <SelectTrigger id="difficulty">
-                        <SelectValue placeholder="Select difficulty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Entry Level">Entry Level</SelectItem>
-                        <SelectItem value="Mid Level">Mid Level</SelectItem>
-                        <SelectItem value="Senior Level">
-                          Senior Level
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setJobFormOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={selectedJob ? handleUpdateJob : handleCreateJob}
-                  >
-                    {selectedJob ? "Update Job" : "Create Job"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={selectedJob ? handleUpdateJob : handleCreateJob}
+                    >
+                      {selectedJob ? "Update Job" : "Create Job"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Button
+                variant="outline"
+                onClick={() => navigate("/admin/questions")}
+                className="hidden md:inline-flex"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add New Question
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -603,7 +610,7 @@ export default function AdminDashboard() {
                         <Plus className="h-3 w-3 mr-1" /> Generate Questions
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
                       <DialogHeader>
                         <DialogTitle>Generate Questions</DialogTitle>
                         <DialogDescription>

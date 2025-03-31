@@ -54,7 +54,7 @@ interface Submission {
 }
 
 export default function Submissions() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);

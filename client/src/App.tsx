@@ -15,6 +15,7 @@ import AdminRoute from "./components/AdminRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Footer from "./components/Footer";
+import QuestionManagement from "./pages/admin/QuestionManagement";
 
 function App() {
   return (
@@ -52,10 +53,18 @@ function App() {
 
                 {/* Admin routes */}
                 <Route
-                  path="/admin/*"
+                  path="/admin"
                   element={
                     <AdminRoute>
                       <AdminDashboard />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/questions"
+                  element={
+                    <AdminRoute>
+                      <QuestionManagement />
                     </AdminRoute>
                   }
                 />

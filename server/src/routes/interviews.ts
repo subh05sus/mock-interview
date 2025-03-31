@@ -265,4 +265,35 @@ router.get("/questions/job/:jobId", async (req, res) => {
     res.status(500).json({ message: "Error fetching questions", error });
   }
 });
+
+// Get all questions (admin only)
+router.get("/questions", isAuthenticated, async (req, res) => {
+  try {
+    const questions = await Question.find().populate("jobId");
+    res.json(questions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching questions", error });
+  }
+});
+
+// Update templates and snippets (admin only)
+router.put("/:id/templates", isAuthenticated, async (req, res) => {
+  try {
+    const { languageTemplates, answerSnippets } = req.body;
+
+    const question = await Question.findByIdAndUpdate(
+      req.params.id,
+      { languageTemplates, answerSnippets },
+      { new: true }
+    );
+
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    res.json(question);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating templates", error });
+  }
+});
 export default router;

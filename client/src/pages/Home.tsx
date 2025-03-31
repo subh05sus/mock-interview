@@ -28,37 +28,37 @@ export default function Home() {
 
   const features = [
     {
-      icon: <Code2 className="h-10 w-10 text-indigo-500" />,
+      icon: <Code2 className="h-10 w-10 text-yellow-600" />,
       title: "Interactive Coding Environment",
       description:
         "Write, run, and test your code in our feature-rich editor with syntax highlighting and autocompletion.",
     },
     {
-      icon: <BrainCircuit className="h-10 w-10 text-indigo-500" />,
+      icon: <BrainCircuit className="h-10 w-10 text-yellow-600" />,
       title: "AI-Powered Feedback",
       description:
         "Receive detailed code reviews and suggestions from our advanced AI system.",
     },
     {
-      icon: <Briefcase className="h-10 w-10 text-indigo-500" />,
+      icon: <Briefcase className="h-10 w-10 text-yellow-600" />,
       title: "Job-Specific Questions",
       description:
         "Practice with questions tailored to specific job roles and skill requirements.",
     },
     {
-      icon: <CheckCircle className="h-10 w-10 text-indigo-500" />,
+      icon: <CheckCircle className="h-10 w-10 text-yellow-600" />,
       title: "Comprehensive Test Cases",
       description:
         "Validate your solutions against multiple test cases, including hidden edge cases.",
     },
     {
-      icon: <Cpu className="h-10 w-10 text-indigo-500" />,
+      icon: <Cpu className="h-10 w-10 text-yellow-600" />,
       title: "Performance Metrics",
       description:
         "Track execution time and memory usage to optimize your solutions.",
     },
     {
-      icon: <Users className="h-10 w-10 text-indigo-500" />,
+      icon: <Users className="h-10 w-10 text-yellow-600" />,
       title: "Mock Interview Simulation",
       description:
         "Experience realistic interview conditions with timed challenges and pressure scenarios.",
@@ -68,7 +68,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+      <section className="relative py-20 bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground">
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-10 md:mb-0">
@@ -81,7 +81,7 @@ export default function Home() {
                 Ace Your Next Technical Interview
               </motion.h1>
               <motion.p
-                className="text-xl mb-8 text-indigo-100"
+                className="text-xl mb-8 text-secondary-foreground/90"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
@@ -99,14 +99,14 @@ export default function Home() {
                   <Link to="/jobs">
                     <Button
                       size="lg"
-                      className="bg-white text-indigo-600 hover:bg-indigo-100"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
                       onMouseEnter={() => setIsHovered(true)}
                       onMouseLeave={() => setIsHovered(false)}
                     >
                       Start Practicing
                       <ChevronRight
                         className={`ml-2 transition-transform duration-300 ${
-                          isHovered ? "tranzinc-x-1" : ""
+                          isHovered ? "translate-x-1" : ""
                         }`}
                       />
                     </Button>
@@ -115,14 +115,14 @@ export default function Home() {
                   <Link to="/register">
                     <Button
                       size="lg"
-                      className="bg-white text-indigo-600 hover:bg-indigo-100"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
                       onMouseEnter={() => setIsHovered(true)}
                       onMouseLeave={() => setIsHovered(false)}
                     >
                       Get Started
                       <ChevronRight
                         className={`ml-2 transition-transform duration-300 ${
-                          isHovered ? "tranzinc-x-1" : ""
+                          isHovered ? "translate-x-1" : ""
                         }`}
                       />
                     </Button>
@@ -136,12 +136,12 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-                <div className="bg-zinc-800 px-4 py-2 flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <div className="text-zinc-400 text-sm ml-2">
+              <div className="bg-card rounded-lg shadow-xl overflow-hidden border border-border">
+                <div className="bg-muted px-4 py-2 flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-destructive"></div>
+                  <div className="w-3 h-3 rounded-full bg-warning"></div>
+                  <div className="w-3 h-3 rounded-full bg-success"></div>
+                  <div className="text-muted-foreground text-sm ml-2">
                     mock-interview.js
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-b from-transparent dark:to-zinc-900"></div>
       </section>
 
       {/* Features Section */}
@@ -180,7 +180,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold mb-4">
               Why Choose Our Platform?
             </h2>
-            <p className="text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Our AI-powered mock interview system helps you prepare for
               technical interviews with real-world coding challenges and instant
               feedback.
@@ -196,7 +196,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-shadow">
+                <Card className="h-full hover:shadow-lg transition-shadow border-yellow-600/20 hover:border-yellow-600/50">
                   <CardHeader>
                     <div className="mb-4">{feature.icon}</div>
                     <CardTitle>{feature.title}</CardTitle>
@@ -214,12 +214,12 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-zinc-100 dark:bg-zinc-800">
+      <section className="py-20 bg-muted">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">
             Ready to Ace Your Next Interview?
           </h2>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Join thousands of developers who have improved their interview
             skills with our platform.
           </p>
@@ -227,7 +227,7 @@ export default function Home() {
             <Link to="/jobs">
               <Button
                 size="lg"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Browse Job Challenges
               </Button>
@@ -237,13 +237,17 @@ export default function Home() {
               <Link to="/register">
                 <Button
                   size="lg"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   Sign Up Free
                 </Button>
               </Link>
               <Link to="/login">
-                <Button size="lg" variant="outline">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/10"
+                >
                   Log In
                 </Button>
               </Link>
