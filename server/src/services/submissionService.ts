@@ -706,7 +706,6 @@ export class SubmissionService {
       const allResults = [...results, ...hiddenResults];
       const passed = allResults.every((result) => result.passed);
 
-      console.log(allResults)
       const failedTestCases = allResults.filter(
         (result) => !result.passed
       );

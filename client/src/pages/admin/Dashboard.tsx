@@ -50,6 +50,21 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { Users, BookCheck, FileQuestion, Award } from "lucide-react";
+import QuestionManagement from "../../components/QuestionManagement";
 
 interface User {
   _id: string;
@@ -72,6 +87,14 @@ interface Job {
   jobType: string;
   createdAt: string;
   questions: any[];
+}
+interface Submission {
+  _id: string;
+  user: { name: string };
+  question: { title: string };
+  language: string;
+  passed: boolean;
+  submittedAt: string;
 }
 
 export default function AdminDashboard() {
@@ -110,6 +133,29 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Add these state variables to the component
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalJobs: 0,
+    totalQuestions: 0,
+    totalSubmissions: 0,
+    submissionsByDifficulty: [],
+    submissionsByLanguage: [],
+    passRateByDifficulty: [],
+    recentSubmissions: [],
+  });
+
+  // Add this function to fetch stats
+  const fetchStats = async () => {
+    try {
+      const statsRes = await api.get("/stats/admin");
+      setStats(statsRes.data);
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
+
+  // Update the useEffect to fetch stats
   useEffect(() => {
     // Redirect if not authenticated or not admin
     if (!isAuthenticated) {
@@ -134,6 +180,9 @@ export default function AdminDashboard() {
         // Fetch jobs
         const jobsRes = await api.get("/jobs");
         setJobs(jobsRes.data);
+
+        // Fetch stats
+        await fetchStats();
 
         setLoading(false);
       } catch (err) {
@@ -333,208 +382,394 @@ export default function AdminDashboard() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
-      <Tabs defaultValue="jobs">
+      {/* Add a new tab for Dashboard in the Tabs component */}
+      <Tabs defaultValue="dashboard">
         <TabsList className="mb-6">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="jobs">Job Management</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="questions">
+            {/* <Link to="/admin/questions"> */}
+            Question Management
+            {/* </Link> */}
+          </TabsTrigger>
         </TabsList>
+
+        {/* Dashboard Tab */}
+        <TabsContent value="dashboard">
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Total Users
+                    </p>
+                    <h3 className="text-3xl font-bold mt-1">
+                      {stats.totalUsers}
+                    </h3>
+                  </div>
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="h-6 w-6 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Total Jobs
+                    </p>
+                    <h3 className="text-3xl font-bold mt-1">
+                      {stats.totalJobs}
+                    </h3>
+                  </div>
+                  <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                    <Award className="h-6 w-6 text-blue-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Total Questions
+                    </p>
+                    <h3 className="text-3xl font-bold mt-1">
+                      {stats.totalQuestions}
+                    </h3>
+                  </div>
+                  <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                    <FileQuestion className="h-6 w-6 text-amber-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Total Submissions
+                    </p>
+                    <h3 className="text-3xl font-bold mt-1">
+                      {stats.totalSubmissions}
+                    </h3>
+                  </div>
+                  <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <BookCheck className="h-6 w-6 text-green-500" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Submissions by Difficulty</CardTitle>
+                </CardHeader>
+                <CardContent className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={stats.submissionsByDifficulty}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="count" fill="#8884d8" name="Submissions" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Submissions by Language</CardTitle>
+                </CardHeader>
+                <CardContent className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats.submissionsByLanguage}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        label={({ name, percent }) =>
+                          `${name}: ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {stats.submissionsByLanguage.map((index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              ["#8884d8", "#82ca9d", "#ffc658", "#ff8042"][
+                                index % 4
+                              ]
+                            }
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Submissions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Submissions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Question</TableHead>
+                      <TableHead>Language</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stats.recentSubmissions.map((submission: Submission) => (
+                      <TableRow key={submission._id}>
+                        <TableCell className="font-medium">
+                          {submission.user.name}
+                        </TableCell>
+                        <TableCell>{submission.question.title}</TableCell>
+                        <TableCell>{submission.language}</TableCell>
+                        <TableCell>
+                          {submission.passed ? (
+                            <Badge
+                              variant="success"
+                              className="flex items-center w-fit"
+                            >
+                              <Check className="h-3 w-3 mr-1" /> Passed
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="destructive"
+                              className="flex items-center w-fit"
+                            >
+                              <X className="h-3 w-3 mr-1" /> Failed
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(
+                            submission.submittedAt
+                          ).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {stats.recentSubmissions.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center py-8 text-muted-foreground"
+                        >
+                          No recent submissions
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         {/* Jobs Tab */}
         <TabsContent value="jobs">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Job Listings</h2>
-            <div className="flex gap-2 items-center">
-              <Dialog open={jobFormOpen} onOpenChange={setJobFormOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    onClick={() => {
-                      setSelectedJob(null);
-                      resetJobForm();
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" /> Add New Job
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {selectedJob ? "Edit Job" : "Create New Job"}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {selectedJob
-                        ? "Update the job details below."
-                        : "Fill in the job details to create a new job listing."}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="title">Job Title</Label>
-                        <Input
-                          id="title"
-                          value={jobForm.title}
-                          onChange={(e) =>
-                            setJobForm({ ...jobForm, title: e.target.value })
-                          }
-                          placeholder="e.g. Frontend Developer"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="company">Company</Label>
-                        <Input
-                          id="company"
-                          value={jobForm.company}
-                          onChange={(e) =>
-                            setJobForm({ ...jobForm, company: e.target.value })
-                          }
-                          placeholder="e.g. Acme Inc."
-                        />
-                      </div>
-                    </div>
-
+            <Dialog open={jobFormOpen} onOpenChange={setJobFormOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  onClick={() => {
+                    setSelectedJob(null);
+                    resetJobForm();
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Add New Job
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>
+                    {selectedJob ? "Edit Job" : "Create New Job"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {selectedJob
+                      ? "Update the job details below."
+                      : "Fill in the job details to create a new job listing."}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="description">Job Description</Label>
-                      <Textarea
-                        id="description"
-                        value={jobForm.description}
-                        onChange={(e) =>
-                          setJobForm({
-                            ...jobForm,
-                            description: e.target.value,
-                          })
-                        }
-                        placeholder="Describe the job role and responsibilities"
-                        rows={4}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="requiredSkills">
-                        Required Skills (comma separated)
-                      </Label>
+                      <Label htmlFor="title">Job Title</Label>
                       <Input
-                        id="requiredSkills"
-                        value={jobForm.requiredSkills}
+                        id="title"
+                        value={jobForm.title}
+                        onChange={(e) =>
+                          setJobForm({ ...jobForm, title: e.target.value })
+                        }
+                        placeholder="e.g. Frontend Developer"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="company">Company</Label>
+                      <Input
+                        id="company"
+                        value={jobForm.company}
+                        onChange={(e) =>
+                          setJobForm({ ...jobForm, company: e.target.value })
+                        }
+                        placeholder="e.g. Acme Inc."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Job Description</Label>
+                    <Textarea
+                      id="description"
+                      value={jobForm.description}
+                      onChange={(e) =>
+                        setJobForm({ ...jobForm, description: e.target.value })
+                      }
+                      placeholder="Describe the job role and responsibilities"
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="requiredSkills">
+                      Required Skills (comma separated)
+                    </Label>
+                    <Input
+                      id="requiredSkills"
+                      value={jobForm.requiredSkills}
+                      onChange={(e) =>
+                        setJobForm({
+                          ...jobForm,
+                          requiredSkills: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. JavaScript, React, Node.js"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="position">Position</Label>
+                      <Input
+                        id="position"
+                        value={jobForm.position}
+                        onChange={(e) =>
+                          setJobForm({ ...jobForm, position: e.target.value })
+                        }
+                        placeholder="e.g. Senior Developer"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Location</Label>
+                      <Input
+                        id="location"
+                        value={jobForm.location}
+                        onChange={(e) =>
+                          setJobForm({ ...jobForm, location: e.target.value })
+                        }
+                        placeholder="e.g. Remote, New York"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="salaryRange">Salary Range</Label>
+                      <Input
+                        id="salaryRange"
+                        value={jobForm.salaryRange}
                         onChange={(e) =>
                           setJobForm({
                             ...jobForm,
-                            requiredSkills: e.target.value,
+                            salaryRange: e.target.value,
                           })
                         }
-                        placeholder="e.g. JavaScript, React, Node.js"
+                        placeholder="e.g. $80,000 - $120,000"
                       />
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="position">Position</Label>
-                        <Input
-                          id="position"
-                          value={jobForm.position}
-                          onChange={(e) =>
-                            setJobForm({ ...jobForm, position: e.target.value })
-                          }
-                          placeholder="e.g. Senior Developer"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          value={jobForm.location}
-                          onChange={(e) =>
-                            setJobForm({ ...jobForm, location: e.target.value })
-                          }
-                          placeholder="e.g. Remote, New York"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="salaryRange">Salary Range</Label>
-                        <Input
-                          id="salaryRange"
-                          value={jobForm.salaryRange}
-                          onChange={(e) =>
-                            setJobForm({
-                              ...jobForm,
-                              salaryRange: e.target.value,
-                            })
-                          }
-                          placeholder="e.g. $80,000 - $120,000"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="jobType">Job Type</Label>
-                        <Select
-                          value={jobForm.jobType}
-                          onValueChange={(value) =>
-                            setJobForm({ ...jobForm, jobType: value })
-                          }
-                        >
-                          <SelectTrigger id="jobType">
-                            <SelectValue placeholder="Select job type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Full-time">Full-time</SelectItem>
-                            <SelectItem value="Part-time">Part-time</SelectItem>
-                            <SelectItem value="Contract">Contract</SelectItem>
-                            <SelectItem value="Internship">
-                              Internship
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
                     <div className="space-y-2">
-                      <Label htmlFor="difficulty">Difficulty Level</Label>
+                      <Label htmlFor="jobType">Job Type</Label>
                       <Select
-                        value={jobForm.difficulty}
+                        value={jobForm.jobType}
                         onValueChange={(value) =>
-                          setJobForm({ ...jobForm, difficulty: value })
+                          setJobForm({ ...jobForm, jobType: value })
                         }
                       >
-                        <SelectTrigger id="difficulty">
-                          <SelectValue placeholder="Select difficulty" />
+                        <SelectTrigger id="jobType">
+                          <SelectValue placeholder="Select job type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Entry Level">
-                            Entry Level
-                          </SelectItem>
-                          <SelectItem value="Mid Level">Mid Level</SelectItem>
-                          <SelectItem value="Senior Level">
-                            Senior Level
-                          </SelectItem>
+                          <SelectItem value="Full-time">Full-time</SelectItem>
+                          <SelectItem value="Part-time">Part-time</SelectItem>
+                          <SelectItem value="Contract">Contract</SelectItem>
+                          <SelectItem value="Internship">Internship</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setJobFormOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={selectedJob ? handleUpdateJob : handleCreateJob}
-                    >
-                      {selectedJob ? "Update Job" : "Create Job"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
 
-              <Button
-                variant="outline"
-                onClick={() => navigate("/admin/questions")}
-                className="hidden md:inline-flex"
-              >
-                <Plus className="h-4 w-4 mr-2" /> Add New Question
-              </Button>
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="difficulty">Difficulty Level</Label>
+                    <Select
+                      value={jobForm.difficulty}
+                      onValueChange={(value) =>
+                        setJobForm({ ...jobForm, difficulty: value })
+                      }
+                    >
+                      <SelectTrigger id="difficulty">
+                        <SelectValue placeholder="Select difficulty" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Entry Level">Entry Level</SelectItem>
+                        <SelectItem value="Mid Level">Mid Level</SelectItem>
+                        <SelectItem value="Senior Level">
+                          Senior Level
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setJobFormOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={selectedJob ? handleUpdateJob : handleCreateJob}
+                  >
+                    {selectedJob ? "Update Job" : "Create Job"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -610,7 +845,7 @@ export default function AdminDashboard() {
                         <Plus className="h-3 w-3 mr-1" /> Generate Questions
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+                    <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Generate Questions</DialogTitle>
                         <DialogDescription>
@@ -721,8 +956,8 @@ export default function AdminDashboard() {
 
         {/* Users Tab */}
         <TabsContent value="users">
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-200">
+          <div className="bg-secondary rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-xl font-semibold">User Management</h2>
             </div>
 
@@ -788,6 +1023,11 @@ export default function AdminDashboard() {
               </Table>
             </div>
           </div>
+        </TabsContent>
+
+        {/* Questions Tab */}
+        <TabsContent value="questions">
+          <QuestionManagement />
         </TabsContent>
       </Tabs>
     </div>

@@ -196,4 +196,45 @@ router.get("/users", isAuthenticated, async (req, res) => {
   }
 });
 
+// Admin-only route to delete a user
+router.delete("/users/:id", isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting user", error });
+  }
+});
+
+// Toggle user to admin
+router.patch("/users/:id/toggle-admin", isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Find the user first to get current status
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Toggle the isAdmin status
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { isAdmin: !user.isAdmin },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res
+      .status(200)
+      .json({ message: "User updated to admin successfully", updatedUser });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating user", error });
+  }
+});
+
 export default router;

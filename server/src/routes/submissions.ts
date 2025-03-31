@@ -46,7 +46,6 @@ const validateCode = (code: string): boolean => {
 router.post("/run", isAuthenticated, submissionRateLimit, async (req, res) => {
   try {
     const { code, languageId, questionId } = req.body;
-    console.log("Running code:", code, languageId, questionId);
     // Validate code input
     if (!validateCode(code)) {
       return res.status(400).json({
@@ -170,4 +169,35 @@ router.get("/user/:userId", isAuthenticated, async (req, res) => {
   }
 });
 
+// Submit feedback for AI review
+router.post("/feedback", isAuthenticated, async (req, res) => {
+  try {
+    const { submissionId, questionId, rating, comment } = req.body;
+
+    // Validate required fields
+    if (!submissionId || !questionId || !rating) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Find the submission
+    const submission = await Submission.findById(submissionId);
+    if (!submission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+
+    // Update the submission with feedback
+    submission.aiReviewFeedback = {
+      rating,
+      comment: comment || "",
+      submittedAt: new Date(),
+    };
+
+    await submission.save();
+
+    res.json({ message: "Feedback submitted successfully" });
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    res.status(500).json({ message: "Error submitting feedback", error });
+  }
+});
 export default router;

@@ -1044,6 +1044,8 @@ public:
         <AIReviewPanel
           aiReview={aiReview}
           onClose={() => setShowAiReview(false)}
+          questionId={question?._id || ""}
+          submissionId={previousSubmissions[0]?._id || ""}
         />
       )}
     </div>

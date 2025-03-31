@@ -1,7 +1,8 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as GitHubStrategy } from "passport-github2";
-import User from "../models/User";
+import User, { IUser } from "../models/User";
+import { Document, Types } from "mongoose";
 
 export default function configurePassport() {
   // Google Strategy
@@ -15,7 +16,7 @@ export default function configurePassport() {
       async (accessToken, refreshToken, profile, done) => {
         try {
           // Check if user already exists
-          let user = await User.findOne({ googleId: profile.id });
+          let user: any = await User.findOne({ googleId: profile.id });
 
           if (user) {
             return done(null, user);
@@ -36,7 +37,7 @@ export default function configurePassport() {
           }
 
           // Create new user
-          const newUser = new User({
+          const newUser: any = new User({
             name: profile.displayName,
             email,
             googleId: profile.id,
@@ -61,7 +62,23 @@ export default function configurePassport() {
         callbackURL: "/api/auth/github/callback",
         scope: ["user:email"],
       },
-      async (accessToken, refreshToken, profile, done) => {
+      async (
+        accessToken: any,
+        refreshToken: any,
+        profile: {
+          id: string | undefined;
+          emails: { value: any }[];
+          photos: { value: any }[];
+          displayName: any;
+          username: any;
+        },
+        done: (
+          arg0: Error | null,
+          arg1:
+            | (Document<unknown, {}, IUser> & IUser & { _id: Types.ObjectId })
+            | undefined
+        ) => void
+      ) => {
         try {
           // Check if user already exists
           let user = await User.findOne({ githubId: profile.id });
@@ -107,7 +124,7 @@ export default function configurePassport() {
     done(null, user);
   });
 
-  passport.deserializeUser((obj, done) => {
+  passport.deserializeUser((obj: any, done) => {
     done(null, obj);
   });
 }

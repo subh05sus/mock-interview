@@ -15,7 +15,7 @@ import AdminRoute from "./components/AdminRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Footer from "./components/Footer";
-import QuestionManagement from "./pages/admin/QuestionManagement";
+import QuestionManagement from "./components/QuestionManagement";
 
 function App() {
   return (

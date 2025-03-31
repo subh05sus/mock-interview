@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,9 +32,22 @@ import {
 } from "../components/ui/select";
 import api from "../services/api";
 
+interface Jobtype {
+  _id: string;
+  title: string;
+  company: string;
+  description: string;
+  location: string;
+  salaryRange: string;
+  jobType: string;
+  difficulty: string;
+  requiredSkills: string[];
+  slug: string;
+}
+
 export default function JobListings() {
   const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState<Jobtype[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("");
@@ -64,7 +78,7 @@ export default function JobListings() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
-        (job) =>
+        (job: Jobtype) =>
           job.title.toLowerCase().includes(term) ||
           job.company.toLowerCase().includes(term) ||
           job.description.toLowerCase().includes(term) ||
@@ -74,26 +88,28 @@ export default function JobListings() {
 
     // Difficulty filter
     if (difficultyFilter) {
-      result = result.filter((job) => job.difficulty === difficultyFilter);
+      result = result.filter(
+        (job: Jobtype) => job.difficulty === difficultyFilter
+      );
     }
 
     // Job type filter
     if (jobTypeFilter) {
-      result = result.filter((job) => job.jobType === jobTypeFilter);
+      result = result.filter((job: Jobtype) => job.jobType === jobTypeFilter);
     }
 
     setFilteredJobs(result);
   }, [searchTerm, difficultyFilter, jobTypeFilter, jobs]);
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: any) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleDifficultyChange = (value) => {
+  const handleDifficultyChange = (value: any) => {
     setDifficultyFilter(value);
   };
 
-  const handleJobTypeChange = (value) => {
+  const handleJobTypeChange = (value: any) => {
     setJobTypeFilter(value);
   };
 

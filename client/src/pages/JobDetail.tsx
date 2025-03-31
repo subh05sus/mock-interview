@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,14 +35,36 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 
+interface JobType {
+  _id: string;
+  title: string;
+  company: string;
+  location: string;
+  salaryRange: string;
+  jobType: string;
+  description: string;
+  requiredSkills: string[];
+  difficulty: string;
+  slug: string;
+}
+
+interface QuestionType {
+  _id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  tags: string[];
+  slug: string;
+}
+
 export default function JobDetail() {
   const { jobSlug } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin } = useAuth();
 
-  const [job, setJob] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [submissions, setSubmissions] = useState([]);
+  const [job, setJob] = useState<JobType | null>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingQuestions, setGeneratingQuestions] = useState(false);
 
@@ -64,7 +87,7 @@ export default function JobDetail() {
         if (isAuthenticated) {
           const submissionsResponse = await api.get("/submissions/user");
           const jobSubmissions = submissionsResponse.data.filter(
-            (sub) => sub.jobId._id === jobResponse.data._id
+            (sub: any) => sub.jobId._id === jobResponse.data._id
           );
           setSubmissions(jobSubmissions);
         }
@@ -82,6 +105,8 @@ export default function JobDetail() {
 
   const handleGenerateQuestions = async () => {
     try {
+      if (!job) return;
+
       setGeneratingQuestions(true);
 
       const response = await api.post(`/jobs/${job._id}/generate-questions`, {
@@ -100,9 +125,9 @@ export default function JobDetail() {
   };
 
   // Get submission status for a question
-  const getSubmissionStatus = (questionId) => {
+  const getSubmissionStatus = (questionId: QuestionType) => {
     if (!isAuthenticated || submissions.length === 0) return null;
-
+    if (!questionId) return null;
     const questionSubmissions = submissions.filter(
       (sub) => sub.questionId._id === questionId
     );
@@ -111,7 +136,8 @@ export default function JobDetail() {
 
     // Get the latest submission
     const latestSubmission = questionSubmissions.sort(
-      (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)
+      (a, b) =>
+        new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
     )[0];
 
     return {
@@ -120,7 +146,7 @@ export default function JobDetail() {
     };
   };
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "Easy":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
@@ -159,12 +185,12 @@ export default function JobDetail() {
           <div className="mb-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">{job.title}</h1>
+                <h1 className="text-3xl font-bold mb-2">{job?.title}</h1>
                 <div className="flex items-center text-zinc-600 dark:text-zinc-400">
                   <Building className="h-4 w-4 mr-1" />
-                  <span className="mr-4">{job.company}</span>
+                  <span className="mr-4">{job?.company}</span>
                   <Badge variant="outline" className="ml-2">
-                    {job.difficulty}
+                    {job?.difficulty}
                   </Badge>
                 </div>
               </div>
@@ -194,7 +220,7 @@ export default function JobDetail() {
                       <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         Location
                       </p>
-                      <p className="font-medium">{job.location}</p>
+                      <p className="font-medium">{job?.location}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -207,7 +233,7 @@ export default function JobDetail() {
                       <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         Salary Range
                       </p>
-                      <p className="font-medium">{job.salaryRange}</p>
+                      <p className="font-medium">{job?.salaryRange}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -220,7 +246,7 @@ export default function JobDetail() {
                       <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         Job Type
                       </p>
-                      <p className="font-medium">{job.jobType}</p>
+                      <p className="font-medium">{job?.jobType}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -235,7 +261,7 @@ export default function JobDetail() {
               <TabsContent value="description" className="mt-4">
                 <Card>
                   <CardContent className="pt-6">
-                    <p className="whitespace-pre-line">{job.description}</p>
+                    <p className="whitespace-pre-line">{job?.description}</p>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -243,7 +269,7 @@ export default function JobDetail() {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex flex-wrap gap-2">
-                      {job.requiredSkills.map((skill, index) => (
+                      {job?.requiredSkills.map((skill, index) => (
                         <Badge key={index} variant="secondary">
                           {skill}
                         </Badge>
@@ -310,15 +336,17 @@ export default function JobDetail() {
                           </p>
                           <div className="flex flex-wrap gap-2 mt-4">
                             {question.tags &&
-                              question.tags.slice(0, 3).map((tag, i) => (
-                                <Badge
-                                  key={i}
-                                  variant="outline"
-                                  className="bg-zinc-100 dark:bg-zinc-700"
-                                >
-                                  {tag}
-                                </Badge>
-                              ))}
+                              question.tags
+                                .slice(0, 3)
+                                .map((tag: string, i: number) => (
+                                  <Badge
+                                    key={i}
+                                    variant="outline"
+                                    className="bg-zinc-100 dark:bg-zinc-700"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
                           </div>
                           {submissionStatus && (
                             <div className="mt-4">
@@ -344,7 +372,7 @@ export default function JobDetail() {
                         </CardContent>
                         <CardFooter>
                           <Link
-                            to={`/interview/${job.slug}/${question.slug}`}
+                            to={`/interview/${job?.slug}/${question.slug}`}
                             className="w-full"
                           >
                             <Button className="w-full">

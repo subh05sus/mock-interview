@@ -6,11 +6,13 @@ import { useAuth } from "../contexts/AuthContext";
 interface Submission {
   _id: string;
   questionId: {
+    slug: string;
     _id: string;
     title: string;
     difficulty: "Easy" | "Medium" | "Hard";
   };
   jobId: {
+    slug: string;
     _id: string;
     title: string;
     company: string;
@@ -23,6 +25,8 @@ interface Submission {
     | "Compilation Error";
   language: string;
   createdAt: string;
+  submittedAt: string;
+  passed: boolean;
 }
 
 export default function UserSubmissions() {
@@ -64,17 +68,9 @@ export default function UserSubmissions() {
     );
   }
 
-  const statusColors = {
-    Accepted: "bg-green-100 text-green-800",
-    "Wrong Answer": "bg-red-100 text-red-800",
-    "Time Limit Exceeded": "bg-orange-100 text-orange-800",
-    "Runtime Error": "bg-red-100 text-red-800",
-    "Compilation Error": "bg-red-100 text-red-800",
-  };
-
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-zinc-800 mb-6">My Submissions</h1>
+    <div className="p-6 ">
+      <h1 className="text-3xl font-bold text-primary mb-6">My Submissions</h1>
 
       {submissions.length === 0 ? (
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
@@ -87,78 +83,85 @@ export default function UserSubmissions() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="min-w-full divide-y divide-zinc-200">
-            <thead className="bg-zinc-50">
+        <div className="bg-background rounded-lg shadow-md overflow-hidden">
+          <table className="min-w-full divide-y divide-secondary-200">
+            <thead className="bg-secondary-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Question
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Job
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Language
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Action
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-zinc-200">
-              {submissions.map((submission) => (
-                <tr key={submission._id} className="hover:bg-zinc-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div>
-                        <div className="text-sm font-medium text-zinc-900">
-                          {submission.questionId.title}
-                        </div>
-                        <div className="text-sm text-zinc-500">
-                          {submission.questionId.difficulty}
+            <tbody className="bg-muted divide-y divide-foreground/10">
+              {submissions.map((submission) => {
+                return (
+                  <tr
+                    key={submission._id}
+                    className="hover:bg-muted-foreground/10"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div>
+                          <div className="text-sm font-medium text-primary">
+                            {submission.questionId.title}
+                          </div>
+                          <div className="text-sm text-zinc-500">
+                            {submission.questionId.difficulty}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-zinc-900">
-                      {submission.jobId.title}
-                    </div>
-                    <div className="text-sm text-zinc-500">
-                      {submission.jobId.company}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        statusColors[submission.status]
-                      }`}
-                    >
-                      {submission.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">
-                    {submission.language}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">
-                    {new Date(submission.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link
-                      to={`/interview/${submission.jobId._id}/${submission.questionId._id}`}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Try Again
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-primary">
+                        {submission.jobId.title}
+                      </div>
+                      <div className="text-sm text-zinc-500">
+                        {submission.jobId.company}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full`}
+                      >
+                        {submission.passed ? (
+                          <span className="text-green-800">Passed</span>
+                        ) : (
+                          <span className="text-red-800">Failed</span>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">
+                      {submission.language}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">
+                      {new Date(submission.submittedAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Link
+                        to={`/interview/${submission.jobId.slug}/${submission.questionId.slug}`}
+                        className="text-yellow-600 hover:text-yellow-900"
+                      >
+                        Try Again
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

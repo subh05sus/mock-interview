@@ -81,7 +81,7 @@ export default function QuestionPanel({
               {question.examples && question.examples.length > 0 && (
                 <div className="space-y-4 mt-6">
                   <h3 className="text-lg font-semibold">Examples</h3>
-                  {question.examples.map((example, index) => (
+                  {question.examples.map((example: any, index: number) => (
                     <div
                       key={index}
                       className={`p-3 rounded-md ${
@@ -112,7 +112,7 @@ export default function QuestionPanel({
               <h3 className="text-lg font-semibold">Hints</h3>
               {question.hints && question.hints.length > 0 ? (
                 <div className="space-y-2">
-                  {question.hints.map((hint, index) => (
+                  {question.hints.map((hint: string, index: number) => (
                     <div
                       key={index}
                       className={`p-3 rounded-md ${
@@ -138,19 +138,21 @@ export default function QuestionPanel({
               {question.relatedQuestions &&
               question.relatedQuestions.length > 0 ? (
                 <div className="space-y-2">
-                  {question.relatedQuestions.map((related, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 rounded-md ${
-                        theme === "dark" ? "bg-zinc-700" : "bg-zinc-100"
-                      }`}
-                    >
-                      <div className="font-medium">{related.title}</div>
-                      <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {related.difficulty}
+                  {question.relatedQuestions.map(
+                    (related: any, index: number) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-md ${
+                          theme === "dark" ? "bg-zinc-700" : "bg-zinc-100"
+                        }`}
+                      >
+                        <div className="font-medium">{related.title}</div>
+                        <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                          {related.difficulty}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               ) : (
                 <div className="text-zinc-500 dark:text-zinc-400">

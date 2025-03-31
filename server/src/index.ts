@@ -7,6 +7,7 @@ import jobRoutes from "./routes/jobs";
 import interviewRoutes from "./routes/interviews";
 import submissionRoutes from "./routes/submissions";
 import authRoutes from "./routes/auth";
+import statsRoutes from "./routes/stats";
 import configurePassport from "./config/passport";
 
 // Load environment variables
@@ -37,6 +38,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/stats", statsRoutes);
 
 // Health check route
 app.get("/health", (req, res) => {

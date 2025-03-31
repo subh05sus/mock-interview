@@ -5,7 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { API_URL } from "../services/api";
+// import { API_URL } from "../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -108,7 +108,7 @@ export default function Login() {
             </button>
           </div>
 
-          <div className="flex flex-col space-y-3">
+          {/* <div className="flex flex-col space-y-3">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-zinc-300"></div>
@@ -155,7 +155,7 @@ export default function Login() {
                 <span className="ml-2">GitHub</span>
               </a>
             </div>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

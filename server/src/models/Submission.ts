@@ -14,6 +14,7 @@ export interface ISubmission extends Document {
   submittedAt: Date;
   failedTestCases?: any[];
   hiddenResults?: any[];
+  aiReviewFeedback?: any;
 }
 
 const SubmissionSchema: Schema = new Schema({
@@ -42,6 +43,7 @@ const SubmissionSchema: Schema = new Schema({
   submittedAt: { type: Date, default: Date.now },
   failedTestCases: { type: [mongoose.Schema.Types.Mixed], default: [] },
   hiddenResults: { type: [mongoose.Schema.Types.Mixed], default: [] },
+  aiReviewFeedback: { type: mongoose.Schema.Types.Mixed, default: {} },
 });
 
 export default mongoose.model<ISubmission>("Submission", SubmissionSchema);
