@@ -40,6 +40,14 @@ app.use("/submissions", submissionRoutes);
 app.use("/auth", authRoutes);
 app.use("/stats", statsRoutes);
 
+app.get("/test", (req, res) => {
+  res.status(200).json({ message: "Test route is working!" });
+});
+
+app.get("/api/test", (req, res) => {
+  res.status(200).json({ message: "API test route is working!" });
+});
+
 // Health check route
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
