@@ -606,7 +606,7 @@ export default function AdminDashboard() {
                   <Plus className="h-4 w-4 mr-2" /> Add New Job
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
+              <DialogContent className="sm:max-w-[600px] fixed top-0 left-0 right-0 bottom-0 m-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {selectedJob ? "Edit Job" : "Create New Job"}
