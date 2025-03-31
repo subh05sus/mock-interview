@@ -34,11 +34,11 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Routes
-app.use("/api/jobs", jobRoutes);
-app.use("/api/interviews", interviewRoutes);
-app.use("/api/submissions", submissionRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/stats", statsRoutes);
+app.use("/jobs", jobRoutes);
+app.use("/interviews", interviewRoutes);
+app.use("/submissions", submissionRoutes);
+app.use("/auth", authRoutes);
+app.use("/stats", statsRoutes);
 
 // Health check route
 app.get("/health", (req, res) => {
