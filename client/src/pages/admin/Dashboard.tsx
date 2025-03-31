@@ -715,7 +715,7 @@ export default function AdminDashboard() {
         {/* Users Tab */}
         <TabsContent value="users">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 py-4 border-b border-zinc-200">
               <h2 className="text-xl font-semibold">User Management</h2>
             </div>
 

@@ -76,32 +76,17 @@ router.post("/", isAuthenticated, async (req, res) => {
       timeComplexity,
       spaceComplexity,
       tags,
+      functionName,
+      returnType,
+      paramTypes,
+      paramNames,
     } = req.body;
 
-    // Convert preferredLanguage to lowercase if it exists
-    const preferredLanguageLower = preferredLanguage?.toLowerCase();
+    // Generate language templates and answer snippets using AI
+    const { templates, answerSnippets } =
+      await AIService.generateLanguageTemplates(req.body);
 
-    // Generate language templates using AI
-    const languageTemplates = await AIService.generateLanguageTemplates({
-      ...req.body,
-      preferredLanguage: preferredLanguageLower,
-    });
-    console.log({
-      title,
-      description,
-      difficulty,
-      examples,
-      constraints,
-      hints,
-      preferredLanguage: preferredLanguageLower,
-      jobId,
-      solutionApproach,
-      timeComplexity,
-      spaceComplexity,
-      tags,
-      languageTemplates,
-    });
-    // Create new question with templates
+    // Create new question with templates and answer snippets
     const newQuestion = new Question({
       title,
       description,
@@ -109,13 +94,18 @@ router.post("/", isAuthenticated, async (req, res) => {
       examples,
       constraints,
       hints,
-      preferredLanguage: preferredLanguageLower,
+      preferredLanguage,
       jobId,
       solutionApproach,
       timeComplexity,
       spaceComplexity,
       tags,
-      languageTemplates,
+      functionName: functionName || "solution",
+      returnType: returnType || "void",
+      paramTypes: paramTypes || [],
+      paramNames: paramNames || [],
+      languageTemplates: templates,
+      answerSnippets: answerSnippets,
     });
 
     await newQuestion.save();
@@ -147,24 +137,53 @@ router.put("/:id", isAuthenticated, async (req, res) => {
       timeComplexity,
       spaceComplexity,
       tags,
+      functionName,
+      returnType,
+      paramTypes,
+      paramNames,
     } = req.body;
+
+    // Generate new templates and answer snippets if function signature changed
+    const updateData: any = {
+      title,
+      description,
+      difficulty,
+      examples,
+      constraints,
+      hints,
+      preferredLanguage,
+      jobId,
+      solutionApproach,
+      timeComplexity,
+      spaceComplexity,
+      tags,
+      functionName: functionName || "solution",
+      returnType: returnType || "void",
+      paramTypes: paramTypes || [],
+      paramNames: paramNames || [],
+    };
+
+    // Check if function signature changed
+    const existingQuestion = await Question.findById(req.params.id);
+    if (
+      existingQuestion &&
+      (existingQuestion.functionName !== functionName ||
+        existingQuestion.returnType !== returnType ||
+        JSON.stringify(existingQuestion.paramTypes) !==
+          JSON.stringify(paramTypes) ||
+        JSON.stringify(existingQuestion.paramNames) !==
+          JSON.stringify(paramNames))
+    ) {
+      // Generate new templates and answer snippets
+      const { templates, answerSnippets } =
+        await AIService.generateLanguageTemplates(req.body);
+      updateData.languageTemplates = templates;
+      updateData.answerSnippets = answerSnippets;
+    }
 
     const question = await Question.findByIdAndUpdate(
       req.params.id,
-      {
-        title,
-        description,
-        difficulty,
-        examples,
-        constraints,
-        hints,
-        preferredLanguage,
-        jobId,
-        solutionApproach,
-        timeComplexity,
-        spaceComplexity,
-        tags,
-      },
+      updateData,
       { new: true }
     );
 

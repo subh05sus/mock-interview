@@ -36,6 +36,7 @@ export class AIService {
         7. Include a detailed solution approach
         8. Include time and space complexity analysis
         9. Include 3-5 relevant tags (e.g., "Array", "Dynamic Programming", etc.)
+        10. Include function signature details (name, return type, parameter types and names)
         
         Format the response as a JSON object with the following structure:
         {
@@ -49,7 +50,11 @@ export class AIService {
           "solutionApproach": "Detailed explanation of the solution approach",
           "timeComplexity": "O(n) where n is...",
           "spaceComplexity": "O(n) where n is...",
-          "tags": ["Array", "Two Pointers", "etc."]
+          "tags": ["Array", "Two Pointers", "etc."],
+          "functionName": "nameOfFunction",
+          "returnType": "returnType",
+          "paramTypes": ["type1", "type2", "etc."],
+          "paramNames": ["name1", "name2", "etc."]
         }
       `;
 
@@ -65,7 +70,7 @@ export class AIService {
         temperature: 0.7,
         max_tokens: 2000,
       });
-      console.log(response);
+
       const content = response.choices[0].message?.content;
       if (!content) {
         throw new Error("Failed to generate question");
@@ -90,10 +95,13 @@ export class AIService {
   }
 
   // Generate test cases for a question
-  static async generateTestCases(question: IQuestion): Promise<any[]> {
+  static async generateTestCases(
+    question: IQuestion,
+    count: number = 5
+  ): Promise<any[]> {
     try {
       const prompt = `
-        Generate 5 test cases for the following coding interview question:
+        Generate ${count} test cases for the following coding interview question:
         
         Title: ${question.title}
         
@@ -233,18 +241,21 @@ export class AIService {
     }
   }
 
-  // Add this function to the AIService class
-
+  // Generate language templates and answer snippets
   static async generateLanguageTemplates(question: any): Promise<any> {
     try {
       const prompt = `
-Generate code templates for the following coding question in JavaScript, Python, Java, and C++.
+Generate code templates and answer snippets for the following coding question in JavaScript, Python, Java, and C++.
 The templates should include the function signature and any necessary imports or class definitions.
 
 Question: ${question.title}
 Description: ${question.description}
 Examples: ${question.examples.join("\n")}
 Constraints: ${question.constraints}
+Function Name: ${question.functionName || "solution"}
+Return Type: ${question.returnType || "void"}
+Parameter Types: ${(question.paramTypes || []).join(", ")}
+Parameter Names: ${(question.paramNames || []).join(", ")}
 
 Please provide templates in the following format:
 1. JavaScript template
@@ -253,6 +264,23 @@ Please provide templates in the following format:
 4. C++ template
 
 Each template should include proper function signatures, parameter types, and return types based on the question.
+
+Also provide answer snippets that show the structure of the solution without implementing the actual algorithm:
+
+1. JavaScript answer snippet
+2. Python answer snippet
+3. Java answer snippet
+4. C++ answer snippet
+
+For example, a C++ answer snippet might look like:
+\`\`\`cpp
+class Solution {
+public:
+    vector<int> merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        //code here
+    }
+};
+\`\`\`
 `;
 
       const response = await openai.chat.completions.create({
@@ -271,26 +299,44 @@ Each template should include proper function signatures, parameter types, and re
 
       const content = response.choices[0].message?.content || "";
 
-      // Parse the response to extract templates
+      // Parse the response to extract templates and answer snippets
       const templates = {
-        javascript: AIService.extractTemplate(content, "JavaScript"),
-        python: AIService.extractTemplate(content, "Python"),
-        java: AIService.extractTemplate(content, "Java"),
-        cpp: AIService.extractTemplate(content, "C++"),
+        javascript: AIService.extractTemplate(content, "JavaScript template"),
+        python: AIService.extractTemplate(content, "Python template"),
+        java: AIService.extractTemplate(content, "Java template"),
+        cpp: AIService.extractTemplate(content, "C++ template"),
       };
 
-      return templates;
+      const answerSnippets = {
+        javascript: AIService.extractTemplate(
+          content,
+          "JavaScript answer snippet"
+        ),
+        python: AIService.extractTemplate(content, "Python answer snippet"),
+        java: AIService.extractTemplate(content, "Java answer snippet"),
+        cpp: AIService.extractTemplate(content, "C++ answer snippet"),
+      };
+
+      return { templates, answerSnippets };
     } catch (error) {
       console.error("Error generating language templates:", error);
       // Provide default templates if AI generation fails
-      return AIService.getDefaultTemplates(question.title);
+      const defaultTemplates = AIService.getDefaultTemplates(
+        question.title,
+        question.functionName || "solution"
+      );
+      const defaultSnippets = AIService.getDefaultSnippets(
+        question.title,
+        question.functionName || "solution"
+      );
+      return { templates: defaultTemplates, answerSnippets: defaultSnippets };
     }
   }
 
   // Helper method to extract templates from AI response
-  private static extractTemplate(content: string, language: string): string {
+  private static extractTemplate(content: string, sectionName: string): string {
     const regex = new RegExp(
-      `${language}[\\s\\S]*?\`\`\`(?:${language.toLowerCase()}|javascript|python|java|cpp)([\\s\\S]*?)\`\`\``,
+      `${sectionName}[\\s\\S]*?\`\`\`(?:javascript|python|java|cpp)([\\s\\S]*?)\`\`\``,
       "i"
     );
     const match = content.match(regex);
@@ -300,16 +346,18 @@ Each template should include proper function signatures, parameter types, and re
     }
 
     // Return default template if extraction fails
-    return AIService.getDefaultTemplate(language);
+    return "";
   }
 
   // Default templates if AI generation fails
-  private static getDefaultTemplates(title: string): any {
-    const functionName = title
-      .toLowerCase()
-      .replace(/[^\w\s]/g, "")
-      .replace(/\s+/g, "")
-      .replace(/^[0-9]+/, "");
+  private static getDefaultTemplates(title: string, functionName: string): any {
+    const sanitizedFunctionName =
+      functionName ||
+      title
+        .toLowerCase()
+        .replace(/[^\w\s]/g, "")
+        .replace(/\s+/g, "")
+        .replace(/^[0-9]+/, "");
 
     return {
       javascript: `/**
@@ -319,25 +367,54 @@ Each template should include proper function signatures, parameter types, and re
  * @param {number} n
  * @return {void} Do not return anything, modify nums1 in-place instead.
  */
-var ${functionName} = function(nums1, m, nums2, n) {
+var ${sanitizedFunctionName} = function(nums1, m, nums2, n) {
     // Write your solution here
 };`,
       python: `class Solution:
-    def ${functionName}(self, nums1: List[int], m: int, nums2: List[int], n: int) -> None:
-        """
-        Do not return anything, modify nums1 in-place instead.
-        """
-        # Write your solution here
+    def ${sanitizedFunctionName}(self, nums1, m, nums2, n):
+        #code here
         pass`,
       java: `class Solution {
-    public void ${functionName}(int[] nums1, int m, int[] nums2, int n) {
+    public void ${sanitizedFunctionName}(int[] nums1, int m, int[] nums2, int n) {
         // Write your solution here
     }
 }`,
       cpp: `class Solution {
 public:
-    void ${functionName}(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+    void ${sanitizedFunctionName}(vector<int>& nums1, int m, vector<int>& nums2, int n) {
         // Write your solution here
+    }
+};`,
+    };
+  }
+
+  // Default answer snippets if AI generation fails
+  private static getDefaultSnippets(title: string, functionName: string): any {
+    const sanitizedFunctionName =
+      functionName ||
+      title
+        .toLowerCase()
+        .replace(/[^\w\s]/g, "")
+        .replace(/\s+/g, "")
+        .replace(/^[0-9]+/, "");
+
+    return {
+      javascript: `var ${sanitizedFunctionName} = function(nums1, m, nums2, n) {
+    //code here
+};`,
+      python: `class Solution:
+    def ${sanitizedFunctionName}(self, nums1, m, nums2, n):
+        #code here
+        pass`,
+      java: `class Solution {
+    public void ${sanitizedFunctionName}(int[] nums1, int m, int[] nums2, int n) {
+        //code here
+    }
+}`,
+      cpp: `class Solution {
+public:
+    void ${sanitizedFunctionName}(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        //code here
     }
 };`,
     };
@@ -345,7 +422,7 @@ public:
 
   // Get a single default template
   private static getDefaultTemplate(language: string): string {
-    const templates = AIService.getDefaultTemplates("merge");
+    const templates = AIService.getDefaultTemplates("merge", "merge");
     return templates[language.toLowerCase()] || "";
   }
 }

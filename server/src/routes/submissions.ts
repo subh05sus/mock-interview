@@ -90,13 +90,14 @@ router.post(
         passed,
         executionTime,
         memoryUsed,
+        failedTestCases,
       } = await SubmissionService.submitSolution(
         code,
         languageId,
         language,
         questionId,
         jobId,
-        req.user?.id
+        req.user?.id || ""
       );
 
       // Save submission to database
@@ -105,13 +106,15 @@ router.post(
         language,
         questionId,
         jobId,
-        userId: req.user?.id,
+        userId: req.user?.id || "",
         results,
+        hiddenResults,
         aiReview,
         passed,
         executionTime,
         memoryUsed,
         submittedAt: new Date(),
+        failedTestCases,
       });
 
       await submission.save();

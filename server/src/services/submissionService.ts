@@ -7,9 +7,18 @@ import TestCase from "../models/TestCase";
 const JUDGE0_API = process.env.JUDGE0_API || "https://judge0-ce.p.rapidapi.com";
 const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;
 
-// Language-specific code wrappers to capture console output
-const codeWrappers = {
-  javascript: (code: string, input: string) => `
+// Generate dynamic code wrappers based on question and language
+function generateCodeWrapper(
+  code: string,
+  input: string,
+  language: string,
+  question: any
+) {
+  const functionName = question.functionName || "solution";
+
+  switch (language) {
+    case "javascript":
+      return `
     // Capture console.log output
     let output = [];
     const originalLog = console.log;
@@ -27,17 +36,24 @@ const codeWrappers = {
     
     // Execute user code with input arguments
     try {
-      // Assume the last defined function is the main solution function
-      const functionNames = Object.keys(this).filter(
-        key => typeof this[key] === 'function' && key !== 'originalLog'
-      );
-      const mainFunction = functionNames.length > 0 
-        ? this[functionNames[functionNames.length - 1]] 
-        : null;
+      // Find the solution function
+      let solutionFunction = ${functionName};
+      
+      // If the named function doesn't exist, try to find any function
+      if (typeof solutionFunction !== 'function') {
+        const functionNames = Object.keys(this).filter(
+          key => typeof this[key] === 'function' && key !== 'originalLog'
+        );
+        if (functionNames.length > 0) {
+          solutionFunction = this[functionNames[functionNames.length - 1]];
+        }
+      }
         
       let result;
-      if (mainFunction) {
-        result = mainFunction(...Object.values(input));
+      if (typeof solutionFunction === 'function') {
+        result = solutionFunction(...Object.values(input));
+      } else {
+        throw new Error("Could not find solution function");
       }
 
       // For functions that modify in place
@@ -57,13 +73,14 @@ const codeWrappers = {
       console.log("\\n--- Console Output ---");
       output.forEach(log => console.log(log));
     }
-  `,
+      `;
 
-  python: (code: string, input: string) => `
+    case "python":
+      return `
 import sys
 import json
 from io import StringIO
-from typing import List
+from typing import List, Dict, Any, Optional
 
 # Capture print output
 original_stdout = sys.stdout
@@ -79,20 +96,36 @@ input_data = json.loads('''${input}''')
 # Call the solution function
 try:
     solution = Solution()
-    # Get the first method that's not a dunder method
-    solution_methods = [method for method in dir(solution) if not method.startswith('__')]
-    if solution_methods:
-        main_method = getattr(solution, solution_methods[0])
+    # Try to find the method by name first
+    if hasattr(solution, "${functionName}"):
+        main_method = getattr(solution, "${functionName}")
+    else:
+        # Get the first method that's not a dunder method
+        solution_methods = [method for method in dir(solution) if not method.startswith('__')]
+        if solution_methods:
+            main_method = getattr(solution, solution_methods[0])
+        else:
+            raise AttributeError("No solution method found")
+    
+    # Call the method with the input data
+    if isinstance(input_data, dict):
         result = main_method(**input_data)
+    else:
+        result = main_method(*input_data)
         
-        # For functions that modify in place
-        if result is None:
-            # If the function doesn't return anything, we assume it modifies the first argument
+    # For functions that modify in place
+    if result is None:
+        # If the function doesn't return anything, we assume it modifies the first argument
+        if isinstance(input_data, dict):
             first_arg_name = next(iter(input_data))
             print(json.dumps(input_data[first_arg_name]))
+        elif isinstance(input_data, list) and len(input_data) > 0:
+            print(json.dumps(input_data[0]))
         else:
-            # Otherwise return the result
-            print(json.dumps(result))
+            print("null")
+    else:
+        # Otherwise return the result
+        print(json.dumps(result))
 except Exception as e:
     print(f"Execution error: {str(e)}", file=sys.stderr)
 
@@ -105,9 +138,12 @@ if len(console_output) > 1:
     print("\\n--- Console Output ---")
     for line in console_output[:-1]:
         print(line)
-  `,
+elif len(console_output) == 1:
+    print(console_output[0])
+      `;
 
-  java: (code: string, input: string) => `
+    case "java":
+      return `
 import java.util.*;
 import java.lang.reflect.Method;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -128,29 +164,42 @@ public class Main {
             // Create solution instance
             Solution solution = new Solution();
             
-            // Get solution methods
-            Method[] methods = Solution.class.getDeclaredMethods();
-            if (methods.length > 0) {
-                // Use the first solution method found
-                Method mainMethod = methods[0];
-                for (Method m : methods) {
-                    if (!m.getName().equals("equals") && !m.getName().equals("hashCode") && 
-                        !m.getName().equals("toString") && !m.getName().equals("getClass")) {
-                        mainMethod = m;
+            // Try to find the method by name first
+            Method targetMethod = null;
+            try {
+                // Look for the specific method name
+                for (Method method : Solution.class.getDeclaredMethods()) {
+                    if (method.getName().equals("${functionName}")) {
+                        targetMethod = method;
                         break;
                     }
                 }
                 
+                // If not found, use the first non-standard method
+                if (targetMethod == null) {
+                    for (Method method : Solution.class.getDeclaredMethods()) {
+                        if (!method.getName().equals("equals") && 
+                            !method.getName().equals("hashCode") && 
+                            !method.getName().equals("toString") && 
+                            !method.getName().equals("getClass")) {
+                            targetMethod = method;
+                            break;
+                        }
+                    }
+                }
+                
+                if (targetMethod == null) {
+                    throw new Exception("No solution method found");
+                }
+                
                 // Extract parameters and call the method
-                // This is a simplified approach - in real code you'd need more robust parameter handling
                 Object result = null;
                 Object firstParam = null;
                 
                 if (inputData.size() > 0) {
                     firstParam = inputData.values().iterator().next();
                     // Call method with parameters
-                    // This is simplified and would need to be adapted based on actual method signatures
-                    result = mainMethod.invoke(solution, inputData.values().toArray());
+                    result = targetMethod.invoke(solution, inputData.values().toArray());
                 }
                 
                 // Print result or modified first parameter
@@ -159,6 +208,9 @@ public class Main {
                 } else {
                     System.out.println(mapper.writeValueAsString(result));
                 }
+            } catch (Exception e) {
+                System.err.println("Error: " + e.getMessage());
+                e.printStackTrace();
             }
             
         } catch (Exception e) {
@@ -167,9 +219,10 @@ public class Main {
         }
     }
 }
-  `,
+      `;
 
-  cpp: (code: string, input: string) => `
+    case "cpp":
+      return `
 #include <iostream>
 #include <vector>
 #include <string>
@@ -189,24 +242,43 @@ int main() {
         // Create solution instance
         Solution solution;
         
-        // In a real implementation, we would need to determine the correct method
-        // and parameters dynamically. This is a simplified example assuming a common pattern.
+        // Call the solution method
+        json result;
+        bool hasResult = false;
         
         // Extract first parameter for in-place modifications
         json firstParam;
-        if (!inputData.empty()) {
-            auto it = inputData.begin();
-            firstParam = it.value();
+        vector<json> params;
+        
+        if (inputData.is_object()) {
+            // Handle object input
+            for (auto& [key, value] : inputData.items()) {
+                params.push_back(value);
+            }
+        } else if (inputData.is_array()) {
+            // Handle array input
+            params = inputData;
         }
         
-        // This would need to be replaced with actual method call detection
-        // For now, we'll use a simplified approach for common LeetCode patterns
+        if (!params.empty()) {
+            firstParam = params[0];
+        }
         
-        // For demonstration, assuming we have input parameters and we're passing them to a method
-        // that modifies the first parameter in-place
-        
-        // Print first parameter as result (simulating in-place modification)
-        cout << firstParam.dump() << endl;
+        // Try to call the method - this is a simplified approach
+        // In a real implementation, we would need to handle different parameter types
+        try {
+            // For demonstration, we'll assume we're calling the ${functionName} method
+            // with the right parameters
+            
+            // This is a placeholder for the actual method call
+            // In a real implementation, we would use reflection or other techniques
+            // to dynamically call the right method with the right parameters
+            
+            // For now, we'll just print the first parameter as the result
+            cout << firstParam.dump() << endl;
+        } catch (exception& e) {
+            cerr << "Method call error: " << e.what() << endl;
+        }
         
     } catch (exception& e) {
         cerr << "Error: " << e.what() << endl;
@@ -214,8 +286,12 @@ int main() {
     
     return 0;
 }
-  `,
-};
+      `;
+
+    default:
+      return code;
+  }
+}
 
 export class SubmissionService {
   // Execute code against test cases
@@ -242,7 +318,7 @@ export class SubmissionService {
       }
 
       // Get language from languageId
-      let language: keyof typeof codeWrappers = "javascript";
+      let language = "javascript";
       switch (languageId) {
         case 63:
           language = "javascript";
@@ -265,8 +341,13 @@ export class SubmissionService {
             // Prepare input for Judge0
             const inputJson = JSON.stringify(testCase.input);
 
-            // Wrap code to capture console output and handle the specific problem format
-            const wrappedCode = codeWrappers[language](code, inputJson);
+            // Generate dynamic code wrapper based on question and language
+            const wrappedCode = generateCodeWrapper(
+              code,
+              inputJson,
+              language,
+              question
+            );
 
             // Submit to Judge0
             const submissionResponse = await axios.post(
@@ -321,7 +402,7 @@ export class SubmissionService {
                 break;
               }
             }
-            console.log(result);
+
             // Check if execution was successful
             if (!result || result.status.id > 3) {
               // Error status
@@ -347,9 +428,8 @@ export class SubmissionService {
               const outputLines = result.stdout.trim().split("\n");
 
               // Check if there's console output
-              const consoleOutputIndex = outputLines.findIndex(
-                (line: string | string[]) =>
-                  line.includes("--- Console Output ---")
+              const consoleOutputIndex = outputLines.findIndex((line: string) =>
+                line.includes("--- Console Output ---")
               );
 
               if (consoleOutputIndex !== -1) {
@@ -374,7 +454,6 @@ export class SubmissionService {
                 }
               }
             }
-
             // Compare output with expected output
             const passed = this.compareOutputs(output, testCase.expectedOutput);
 
@@ -460,26 +539,7 @@ export class SubmissionService {
         isHidden: true,
       });
 
-      let hiddenResults: (
-        | {
-            passed: boolean;
-            output: null;
-            error: any;
-            consoleOutput: never[];
-            testCase: { input: any; expectedOutput: any; explanation: string };
-            executionTime?: undefined;
-            memoryUsed?: undefined;
-          }
-        | {
-            passed: boolean;
-            output: any;
-            error: null;
-            consoleOutput: any;
-            executionTime: any;
-            memoryUsed: any;
-            testCase: { input: any; expectedOutput: any; explanation: string };
-          }
-      )[] = [];
+      let hiddenResults: any[] = [];
 
       if (hiddenTestCases.length > 0) {
         // Use the same executeCode method but with hidden test cases
@@ -489,25 +549,13 @@ export class SubmissionService {
               // Prepare input for Judge0
               const inputJson = JSON.stringify(testCase.input);
 
-              // Get language from languageId
-              let lang: keyof typeof codeWrappers = "javascript";
-              switch (languageId) {
-                case 63:
-                  lang = "javascript";
-                  break;
-                case 71:
-                  lang = "python";
-                  break;
-                case 62:
-                  lang = "java";
-                  break;
-                case 54:
-                  lang = "cpp";
-                  break;
-              }
-
-              // Wrap code to capture console output
-              const wrappedCode = codeWrappers[lang](code, inputJson);
+              // Generate dynamic code wrapper based on question and language
+              const wrappedCode = generateCodeWrapper(
+                code,
+                inputJson,
+                language,
+                question
+              );
 
               // Submit to Judge0
               const submissionResponse = await axios.post(
@@ -590,8 +638,7 @@ export class SubmissionService {
 
                 // Check if there's console output
                 const consoleOutputIndex = outputLines.findIndex(
-                  (line: string | string[]) =>
-                    line.includes("--- Console Output ---")
+                  (line: string) => line.includes("--- Console Output ---")
                 );
 
                 if (consoleOutputIndex !== -1) {
@@ -617,11 +664,10 @@ export class SubmissionService {
                 }
               }
 
-              // Compare output with expected output
-              const passed = this.compareOutputs(
-                output,
-                testCase.expectedOutput
-              );
+                // Compare output with expected output
+                const passed = this.compareOutputs(output, testCase.expectedOutput);
+              // const passed = true if all testcase pass, compute it here, dont use this.compareOutputs
+
 
               return {
                 passed,
@@ -660,6 +706,19 @@ export class SubmissionService {
       const allResults = [...results, ...hiddenResults];
       const passed = allResults.every((result) => result.passed);
 
+      console.log(allResults)
+      const failedTestCases = allResults.filter(
+        (result) => !result.passed
+      );
+      const failedTestCaseDetails = failedTestCases.map((result) => ({
+        input: result.testCase.input,
+        expectedOutput: result.testCase.expectedOutput,
+        explanation: result.testCase.explanation,
+        output: result.output,
+        error: result.error,
+        consoleOutput: result.consoleOutput,
+      }));
+
       return {
         results,
         hiddenResults,
@@ -667,6 +726,7 @@ export class SubmissionService {
         passed,
         executionTime,
         memoryUsed,
+        failedTestCases: failedTestCaseDetails,
       };
     } catch (error: any) {
       console.error("Error submitting solution:", error);
@@ -676,6 +736,63 @@ export class SubmissionService {
 
   // Helper method to compare outputs
   private static compareOutputs(actual: any, expected: any): boolean {
+    // Handle null or undefined
+    if (
+      actual === null ||
+      actual === undefined ||
+      expected === null ||
+      expected === undefined
+    ) {
+      return actual === expected;
+    }
+
+    // Handle NaN comparison
+    if (typeof actual === "number" && typeof expected === "number") {
+      if (isNaN(actual) && isNaN(expected)) {
+        return true;
+      }
+      if (isNaN(actual) || isNaN(expected)) {
+        return false;
+      }
+    }
+
+    if (typeof actual === "string" && typeof expected === "string") {
+      // Handle string comparison
+      return actual.trim() === expected.trim();
+    }
+    // Handle boolean comparison
+    if (typeof actual === "boolean" && typeof expected === "boolean") {
+      return actual === expected;
+    }
+    // Handle number comparison
+    if (typeof actual === "number" && typeof expected === "number") {
+      return actual === expected;
+    }
+    // Handle date comparison
+    if (actual instanceof Date && expected instanceof Date) {
+      return actual.getTime() === expected.getTime();
+    }
+    // Handle regex comparison
+    if (actual instanceof RegExp && expected instanceof RegExp) {
+      return actual.toString() === expected.toString();
+    }
+    // Handle function comparison
+    if (typeof actual === "function" && typeof expected === "function") {
+      return actual.toString() === expected.toString();
+    }
+    // Handle undefined comparison
+    if (actual === undefined && expected === undefined) {
+      return true;
+    }
+    // Handle null comparison
+    if (actual === null && expected === null) {
+      return true;
+    }
+    // Handle empty string comparison
+    if (actual === "" && expected === "") {
+      return true;
+    }
+
     // Handle different types of outputs
     if (typeof actual !== typeof expected) {
       return false;
@@ -740,6 +857,7 @@ export class SubmissionService {
       return true;
     }
 
-    return true;
+    // Compare primitives
+    return actual === expected;
   }
 }

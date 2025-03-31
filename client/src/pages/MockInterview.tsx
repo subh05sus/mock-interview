@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Editor from "@monaco-editor/react";
+import { format } from "date-fns";
 import {
   ArrowLeft,
   Play,
@@ -14,7 +16,27 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  GripVertical,
+  GripHorizontal,
+  History,
+  ListFilter,
+  ExternalLink,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
+import { Button } from "../components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import {
   Select,
@@ -29,52 +51,133 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../components/ui/tooltip";
+import { ScrollArea } from "../components/ui/scroll-area";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import AIReviewPanel from "../components/interview/AIReviewPanel";
-import api from "../services/api";
-import { Button } from "../components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
-import { Card, CardContent } from "../components/ui/card";
-
-// Import the TestCasePanel component
 import TestCasePanel from "../components/interview/TestCasePanel";
+import api from "../services/api";
 
 // Language IDs for Judge0
-const languageIds = {
+const languageIds: Record<string, number> = {
   javascript: 63, // Node.js
   python: 71, // Python 3
   java: 62, // Java
   cpp: 54, // C++
 };
 
+// TypeScript interfaces
+interface TestCase {
+  _id: string;
+  input: Record<string, any>;
+  expectedOutput: any;
+  explanation: string;
+}
+
+interface TestResult {
+  passed: boolean;
+  output: any;
+  error?: string;
+  executionTime: number;
+  memoryUsed: number;
+  consoleOutput?: string[];
+}
+
+interface Question {
+  _id: string;
+  title: string;
+  slug: string;
+  description: string;
+  difficulty: string;
+  constraints: string;
+  examples: string[];
+  hints: string[];
+  tags: string[];
+  solutionApproach: string;
+  timeComplexity: string;
+  spaceComplexity: string;
+  preferredLanguage: string;
+  languageTemplates: Record<string, string>;
+  answerSnippets: Record<string, string>;
+  relatedQuestions?: Array<{
+    _id: string;
+    title: string;
+    slug: string;
+    difficulty: string;
+  }>;
+}
+
+interface Job {
+  _id: string;
+  title: string;
+  slug: string;
+  company: string;
+}
+
+interface Submission {
+  _id: string;
+  code: string;
+  language: string;
+  passed: boolean;
+  executionTime: number;
+  memoryUsed: number;
+  submittedAt: string;
+  aiReview?: any;
+}
+
+interface AIReview {
+  overallFeedback: string;
+  codeQuality: string;
+  timeComplexity: string;
+  spaceComplexity: string;
+  suggestions: string[];
+  correctness: string;
+  efficiency: string;
+  readability: string;
+  bestPractices: string;
+}
+
 export default function MockInterview() {
-  const { jobSlug, questionSlug } = useParams();
+  const { jobSlug, questionSlug } = useParams<{
+    jobSlug: string;
+    questionSlug: string;
+  }>();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { theme } = useTheme();
 
-  const [job, setJob] = useState(null);
-  const [question, setQuestion] = useState(null);
+  const [job, setJob] = useState<Job | null>(null);
+  const [question, setQuestion] = useState<Question | null>(null);
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
-  const [testCases, setTestCases] = useState([]);
-  const [testResults, setTestResults] = useState([]);
-  const [aiReview, setAiReview] = useState(null);
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [aiReview, setAiReview] = useState<AIReview | null>(null);
   const [showAiReview, setShowAiReview] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTestCase, setActiveTestCase] = useState(0);
   const [showConsole, setShowConsole] = useState(true);
-  const [startTime, setStartTime] = useState(null);
+  const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [previousSubmissions, setPreviousSubmissions] = useState<Submission[]>(
+    []
+  );
+  const [relatedQuestions, setRelatedQuestions] = useState<Question[]>([]);
 
-  const editorRef = useRef(null);
-  const timerRef = useRef(null);
+  // Resizable panels state
+  const [leftPanelWidth, setLeftPanelWidth] = useState(50); // percentage
+  const [consolePanelHeight, setConsolePanelHeight] = useState(50); // percentage
+  const [isResizingHorizontal, setIsResizingHorizontal] = useState(false);
+  const [isResizingVertical, setIsResizingVertical] = useState(false);
+
+  const editorRef = useRef<any>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle editor mounting
-  const handleEditorDidMount = (editor, monaco) => {
+  const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
 
     // Set editor theme based on app theme
@@ -122,20 +225,48 @@ export default function MockInterview() {
         );
         setQuestion(questionRes.data);
 
+        // Fetch related questions for this job
+        const relatedQuestionsRes = await api.get(
+          `/interviews/job/${jobRes.data._id}`
+        );
+        // Filter out the current question
+        const filteredQuestions = relatedQuestionsRes.data.filter(
+          (q: Question) => q.slug !== questionSlug
+        );
+        setRelatedQuestions(filteredQuestions);
+
+        // Fetch previous submissions for this question
+        if (isAuthenticated) {
+          try {
+            const submissionsRes = await api.get("/submissions/user");
+            const questionSubmissions = submissionsRes.data.filter(
+              (sub: any) => sub.questionId.slug === questionSlug
+            );
+            setPreviousSubmissions(questionSubmissions);
+          } catch (error) {
+            console.error("Error fetching submissions:", error);
+          }
+        }
+
         // Set initial code template based on question's preferred language
         const preferredLanguage =
           questionRes.data.preferredLanguage || "javascript";
         setLanguage(preferredLanguage);
 
-        // Use question-specific templates if available, otherwise use defaults
+        // Use question-specific answer snippets if available, otherwise use templates
         if (
+          questionRes.data.answerSnippets &&
+          questionRes.data.answerSnippets[preferredLanguage]
+        ) {
+          setCode(questionRes.data.answerSnippets[preferredLanguage]);
+        } else if (
           questionRes.data.languageTemplates &&
           questionRes.data.languageTemplates[preferredLanguage]
         ) {
           setCode(questionRes.data.languageTemplates[preferredLanguage]);
         } else {
           // Fallback to default templates if question doesn't have templates
-          const defaultTemplates = {
+          const defaultTemplates: Record<string, string> = {
             javascript: `/**
  * Function signature based on the problem
  */
@@ -204,8 +335,72 @@ public:
     };
   }, [startTime]);
 
+  // Handle horizontal resizing
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingHorizontal && containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const newWidth =
+          ((e.clientX - containerRect.left) / containerRect.width) * 100;
+
+        // Limit the width between 20% and 80%
+        if (newWidth >= 20 && newWidth <= 80) {
+          setLeftPanelWidth(newWidth);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingHorizontal(false);
+    };
+
+    if (isResizingHorizontal) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizingHorizontal]);
+
+  // Handle vertical resizing
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingVertical && containerRef.current) {
+        const editorContainer = document.querySelector(".editor-container");
+        if (editorContainer) {
+          const containerRect = editorContainer.getBoundingClientRect();
+          const newHeight =
+            ((e.clientY - containerRect.top) / containerRect.height) * 100;
+
+          // Limit the height between 10% and 70%
+          const consoleHeight = 100 - newHeight;
+          // if (consoleHeight >= 10 && consoleHeight <= 70) {
+          // }
+          setConsolePanelHeight(consoleHeight);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingVertical(false);
+    };
+
+    if (isResizingVertical) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizingVertical]);
+
   // Format elapsed time
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
@@ -230,14 +425,16 @@ public:
         code,
         language,
         languageId: languageIds[language],
-        questionId: question._id,
+        questionId: question?._id,
       });
 
       setTestResults(response.data.results);
       setIsRunning(false);
 
       // Show toast based on results
-      const allPassed = response.data.results.every((result) => result.passed);
+      const allPassed = response.data.results.every(
+        (result: TestResult) => result.passed
+      );
       if (allPassed) {
         toast.success("All test cases passed!");
       } else {
@@ -264,17 +461,28 @@ public:
         code,
         language,
         languageId: languageIds[language],
-        questionId: question._id,
-        jobId: job._id,
+        questionId: question?._id,
+        jobId: job?._id,
       });
 
       setTestResults(response.data.results);
       setAiReview(response.data.aiReview);
       setShowAiReview(true);
+
+      // Add the new submission to the list
+      if (response.data.submission) {
+        setPreviousSubmissions([
+          response.data.submission,
+          ...previousSubmissions,
+        ]);
+      }
+
       setIsSubmitting(false);
 
       // Show toast based on results
-      const allPassed = response.data.results.every((result) => result.passed);
+      const allPassed = response.data.results.every(
+        (result: TestResult) => result.passed
+      );
       if (allPassed) {
         toast.success("Solution submitted successfully!");
       } else {
@@ -287,17 +495,22 @@ public:
     }
   };
 
-  const handleLanguageChange = (newLanguage) => {
+  const handleLanguageChange = (newLanguage: string) => {
     if (
-      code === (question?.languageTemplates?.[language] || "") ||
+      code ===
+        (question?.answerSnippets?.[language] ||
+          question?.languageTemplates?.[language] ||
+          "") ||
       !code.trim()
     ) {
       // If current code is the template or empty, replace with new template
-      if (question?.languageTemplates?.[newLanguage]) {
+      if (question?.answerSnippets?.[newLanguage]) {
+        setCode(question.answerSnippets[newLanguage]);
+      } else if (question?.languageTemplates?.[newLanguage]) {
         setCode(question.languageTemplates[newLanguage]);
       } else {
         // Fallback to a simple template
-        const defaultTemplates = {
+        const defaultTemplates: Record<string, string> = {
           javascript: `// Write your solution here`,
           python: `# Write your solution here`,
           java: `// Write your solution here`,
@@ -308,11 +521,13 @@ public:
     } else if (
       window.confirm("Changing language will reset your code. Continue?")
     ) {
-      if (question?.languageTemplates?.[newLanguage]) {
+      if (question?.answerSnippets?.[newLanguage]) {
+        setCode(question.answerSnippets[newLanguage]);
+      } else if (question?.languageTemplates?.[newLanguage]) {
         setCode(question.languageTemplates[newLanguage]);
       } else {
         // Fallback to a simple template
-        const defaultTemplates = {
+        const defaultTemplates: Record<string, string> = {
           javascript: `// Write your solution here`,
           python: `# Write your solution here`,
           java: `// Write your solution here`,
@@ -325,6 +540,27 @@ public:
     }
 
     setLanguage(newLanguage);
+  };
+
+  const getLanguageLabel = (languageCode: string): string => {
+    const labels: Record<string, string> = {
+      javascript: "JavaScript",
+      python: "Python",
+      java: "Java",
+      cpp: "C++",
+    };
+    return labels[languageCode] || languageCode;
+  };
+
+  const loadSubmission = (submission: Submission) => {
+    if (
+      window.confirm(
+        "Loading this submission will replace your current code. Continue?"
+      )
+    ) {
+      setCode(submission.code);
+      setLanguage(submission.language);
+    }
   };
 
   if (loading) {
@@ -366,7 +602,7 @@ public:
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-2 text-gray-500" />
+            <Clock className="h-4 w-4 mr-2 text-zinc-500" />
             <span className="text-sm font-mono">{formatTime(elapsedTime)}</span>
           </div>
 
@@ -423,9 +659,12 @@ public:
       </div>
 
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden" ref={containerRef}>
         {/* Left panel - Question */}
-        <div className="w-1/2 flex flex-col border-r">
+        <div
+          className="flex flex-col border-r relative"
+          style={{ width: `${leftPanelWidth}%` }}
+        >
           <Tabs defaultValue="description" className="flex-1 flex flex-col">
             <TabsList className="mx-4 mt-4 justify-start">
               <TabsTrigger value="description" className="flex items-center">
@@ -437,137 +676,307 @@ public:
               <TabsTrigger value="solution" className="flex items-center">
                 <Code2 className="h-4 w-4 mr-2" /> Solution Approach
               </TabsTrigger>
+              <TabsTrigger value="related" className="flex items-center">
+                <ListFilter className="h-4 w-4 mr-2" /> Other Problems
+              </TabsTrigger>
+              <TabsTrigger value="submissions" className="flex items-center">
+                <History className="h-4 w-4 mr-2" /> Submissions
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent
               value="description"
               className="flex-1 overflow-auto p-4"
             >
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold">{question.title}</h2>
-                </div>
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bold">{question?.title}</h2>
+                  </div>
 
-                <div className="prose dark:prose-invert max-w-none">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: question.description.replace(/\n/g, "<br />"),
-                    }}
-                  />
-                </div>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          question?.description.replace(/\n/g, "<br />") || "",
+                      }}
+                    />
+                  </div>
 
-                {question.examples && question.examples.length > 0 && (
-                  <div className="space-y-4 mt-6">
-                    <h3 className="text-lg font-semibold">Examples</h3>
-                    {question.examples.map((example, index) => (
-                      <Card key={index}>
+                  {question?.examples && question.examples.length > 0 && (
+                    <div className="space-y-4 mt-6">
+                      <h3 className="text-lg font-semibold">Examples</h3>
+                      {question.examples.map((example, index) => (
+                        <Card key={index}>
+                          <CardContent className="p-4">
+                            <div className="font-mono whitespace-pre-wrap">
+                              {example}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {question?.constraints && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold">Constraints</h3>
+                      <Card>
                         <CardContent className="p-4">
-                          <div className="font-mono whitespace-pre-wrap">
-                            {example}
+                          <div className="prose dark:prose-invert max-w-none">
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: question.constraints.replace(
+                                  /\n/g,
+                                  "<br />"
+                                ),
+                              }}
+                            />
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {question.constraints && (
                   <div className="mt-6">
-                    <h3 className="text-lg font-semibold">Constraints</h3>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="prose dark:prose-invert max-w-none">
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: question.constraints.replace(
-                                /\n/g,
-                                "<br />"
-                              ),
-                            }}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold">Tags</h3>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {question.tags &&
-                      question.tags.map((tag, index) => (
-                        <Badge key={index} variant="outline">
-                          {tag}
-                        </Badge>
-                      ))}
+                    <h3 className="text-lg font-semibold">Tags</h3>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {question?.tags &&
+                        question.tags.map((tag, index) => (
+                          <Badge key={index} variant="outline">
+                            {tag}
+                          </Badge>
+                        ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </ScrollArea>
             </TabsContent>
 
             <TabsContent value="hints" className="flex-1 overflow-auto p-4">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Hints</h3>
-                {question.hints && question.hints.length > 0 ? (
-                  <div className="space-y-4">
-                    {question.hints.map((hint, index) => (
-                      <Card key={index}>
-                        <CardContent className="p-4">
-                          <div className="font-medium">Hint {index + 1}</div>
-                          <div className="mt-2">{hint}</div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500">
-                    No hints available for this question.
-                  </p>
-                )}
-              </div>
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Hints</h3>
+                  {question?.hints && question.hints.length > 0 ? (
+                    <div className="space-y-4">
+                      {question.hints.map((hint, index) => (
+                        <Card key={index}>
+                          <CardContent className="p-4">
+                            <div className="font-medium">Hint {index + 1}</div>
+                            <div className="mt-2">{hint}</div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-zinc-500">
+                      No hints available for this question.
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
             </TabsContent>
 
             <TabsContent value="solution" className="flex-1 overflow-auto p-4">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Solution Approach</h3>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="prose dark:prose-invert max-w-none">
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: question.solutionApproach.replace(
-                            /\n/g,
-                            "<br />"
-                          ),
-                        }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Solution Approach</h3>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="prose dark:prose-invert max-w-none">
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              question?.solutionApproach?.replace(
+                                /\n/g,
+                                "<br />"
+                              ) || "",
+                          }}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  <Card>
-                    <CardContent className="p-4">
-                      <h4 className="font-medium mb-2">Time Complexity</h4>
-                      <p>{question.timeComplexity}</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <h4 className="font-medium mb-2">Space Complexity</h4>
-                      <p>{question.spaceComplexity}</p>
-                    </CardContent>
-                  </Card>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <Card>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-2">Time Complexity</h4>
+                        <p>{question?.timeComplexity}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-2">Space Complexity</h4>
+                        <p>{question?.spaceComplexity}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-              </div>
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="related" className="flex-1 overflow-auto p-4">
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">
+                    Other Problems from {job?.title}
+                  </h3>
+
+                  {relatedQuestions.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4">
+                      {relatedQuestions.map((relatedQuestion) => (
+                        <Card
+                          key={relatedQuestion._id}
+                          className="hover:shadow-md transition-shadow"
+                        >
+                          <CardHeader className="p-4">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-base">
+                                {relatedQuestion.title}
+                              </CardTitle>
+                              <Badge
+                                variant={
+                                  relatedQuestion.difficulty === "Easy"
+                                    ? "success"
+                                    : relatedQuestion.difficulty === "Medium"
+                                    ? "warning"
+                                    : "destructive"
+                                }
+                              >
+                                {relatedQuestion.difficulty}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0 pb-4 px-4">
+                            <div className="flex justify-end">
+                              <Button variant="outline" size="sm" asChild>
+                                <Link
+                                  to={`/interview/${jobSlug}/${relatedQuestion.slug}`}
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-2" /> Open
+                                  Problem
+                                </Link>
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-zinc-500">
+                      No related problems available.
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent
+              value="submissions"
+              className="flex-1 overflow-auto p-4"
+            >
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">
+                    Your Previous Submissions
+                  </h3>
+
+                  {previousSubmissions.length > 0 ? (
+                    <div className="space-y-4">
+                      {previousSubmissions.map((submission) => (
+                        <Card
+                          key={submission._id}
+                          className="hover:shadow-md transition-shadow"
+                        >
+                          <CardHeader className="p-4 pb-2">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="outline">
+                                  {getLanguageLabel(submission.language)}
+                                </Badge>
+                                <span className="text-sm text-muted-foreground">
+                                  {format(
+                                    new Date(submission.submittedAt),
+                                    "MMM d, yyyy HH:mm"
+                                  )}
+                                </span>
+                              </div>
+                              {submission.passed ? (
+                                <Badge
+                                  variant="success"
+                                  className="flex items-center"
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-1" />{" "}
+                                  Passed
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  variant="destructive"
+                                  className="flex items-center"
+                                >
+                                  <XCircle className="h-3 w-3 mr-1" /> Failed
+                                </Badge>
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-4 pt-2">
+                            <div className="flex justify-between items-center text-sm">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                                  <span>
+                                    {submission.executionTime.toFixed(2)}s
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Code2 className="h-4 w-4 mr-1 text-muted-foreground" />
+                                  <span>
+                                    {(submission.memoryUsed / 1024).toFixed(2)}
+                                    MB
+                                  </span>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => loadSubmission(submission)}
+                              >
+                                Load Code
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-zinc-500">
+                      You haven't submitted any solutions for this problem yet.
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
             </TabsContent>
           </Tabs>
+
+          {/* Horizontal resize handle */}
+          <div
+            className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize flex items-center justify-center hover:bg-zinc-300 dark:hover:bg-zinc-700"
+            onMouseDown={() => setIsResizingHorizontal(true)}
+          >
+            <GripVertical className="h-6 w-6 text-zinc-400" />
+          </div>
         </div>
 
         {/* Right panel - Code editor and test cases */}
-        <div className="w-1/2 flex flex-col">
+        <div
+          className="flex flex-col"
+          style={{ width: `${100 - leftPanelWidth}%` }}
+        >
           {/* Code editor */}
-          <div className="flex-1 overflow-hidden">
+          <div
+            className="flex-1 overflow-hidden editor-container relative"
+            style={{ height: `${100 - consolePanelHeight}%` }}
+          >
             <Editor
               height="100%"
               language={language}
@@ -587,16 +996,23 @@ public:
               }}
               theme={theme === "dark" ? "vs-dark" : "light"}
             />
+
+            {/* Vertical resize handle */}
+            <div
+              className="absolute left-0 right-0 bottom-0 h-1 cursor-row-resize flex justify-center hover:bg-zinc-300 dark:hover:bg-zinc-700"
+              onMouseDown={() => setIsResizingVertical(true)}
+            >
+              <GripHorizontal className="h-6 w-6 text-zinc-400" />
+            </div>
           </div>
 
           {/* Console/Test cases panel */}
           <div
-            className={`border-t transition-all duration-300 ${
-              showConsole ? "h-1/3" : "h-10"
-            }`}
+            className="border-t  flex flex-col"
+            style={{ height: `${consolePanelHeight}%` }}
           >
             <div
-              className="flex items-center justify-between px-4 py-2 cursor-pointer"
+              className="flex items-center justify-between px-4 py-2 cursor-pointer bg-zinc-100 dark:bg-zinc-800"
               onClick={() => setShowConsole(!showConsole)}
             >
               <div className="font-medium">Console</div>
@@ -610,7 +1026,7 @@ public:
             </div>
 
             {showConsole && (
-              <div className="h-[calc(100%-40px)] overflow-auto">
+              <div className="flex-1 overflow-auto">
                 <TestCasePanel
                   testCases={testCases}
                   testResults={testResults}

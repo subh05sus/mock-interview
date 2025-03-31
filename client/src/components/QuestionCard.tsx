@@ -19,7 +19,7 @@ export default function QuestionCard({ question, jobId }: QuestionCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="flex justify-between items-start">
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="text-xl font-semibold text-zinc-800">
           {question.title}
         </h2>
         <span
@@ -34,7 +34,7 @@ export default function QuestionCard({ question, jobId }: QuestionCardProps) {
       <div className="mt-6">
         <Link
           to={`/interview/${jobId}/${question._id}`}
-          className="inline-block bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-700 transition-colors"
+          className="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors"
         >
           Start Interview
         </Link>

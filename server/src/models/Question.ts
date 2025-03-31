@@ -20,6 +20,16 @@ export interface IQuestion extends Document {
     java: string;
     cpp: string;
   };
+  answerSnippets: {
+    javascript: string;
+    python: string;
+    java: string;
+    cpp: string;
+  };
+  functionName: string;
+  returnType: string;
+  paramTypes: string[];
+  paramNames: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,7 +48,7 @@ const QuestionSchema: Schema = new Schema(
     hints: { type: [String], default: [] },
     preferredLanguage: {
       type: String,
-      enum: ["javascript", "python", "java", "cpp", "c++", "c","Cpp"] ,
+      enum: ["javascript", "python", "java", "cpp"],
       default: "javascript",
     },
     jobId: {
@@ -63,6 +73,16 @@ const QuestionSchema: Schema = new Schema(
       java: { type: String, default: "" },
       cpp: { type: String, default: "" },
     },
+    answerSnippets: {
+      javascript: { type: String, default: "" },
+      python: { type: String, default: "" },
+      java: { type: String, default: "" },
+      cpp: { type: String, default: "" },
+    },
+    functionName: { type: String, default: "solution" },
+    returnType: { type: String, default: "void" },
+    paramTypes: { type: [String], default: [] },
+    paramNames: { type: [String], default: [] },
   },
   { timestamps: true }
 );

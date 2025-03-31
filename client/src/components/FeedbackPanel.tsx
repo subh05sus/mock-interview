@@ -32,7 +32,7 @@ export default function FeedbackPanel({
 
   const statusColor =
     statusColors[executionResult.status as keyof typeof statusColors] ||
-    "text-gray-600";
+    "text-zinc-600";
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mt-6">
@@ -43,12 +43,12 @@ export default function FeedbackPanel({
           Status: <span className={statusColor}>{executionResult.status}</span>
         </p>
         {executionResult.executionTime !== undefined && (
-          <p className="text-gray-600">
+          <p className="text-zinc-600">
             Execution Time: {executionResult.executionTime} ms
           </p>
         )}
         {executionResult.memory !== undefined && (
-          <p className="text-gray-600">
+          <p className="text-zinc-600">
             Memory Used: {executionResult.memory} KB
           </p>
         )}
@@ -57,7 +57,7 @@ export default function FeedbackPanel({
       {executionResult.error && (
         <div className="mb-4">
           <h3 className="font-medium text-red-600">Error:</h3>
-          <pre className="bg-slate-100 p-3 rounded mt-2 text-sm overflow-x-auto">
+          <pre className="bg-zinc-100 p-3 rounded mt-2 text-sm overflow-x-auto">
             {executionResult.error}
           </pre>
         </div>
@@ -66,7 +66,7 @@ export default function FeedbackPanel({
       {executionResult.output && (
         <div className="mb-4">
           <h3 className="font-medium">Output:</h3>
-          <pre className="bg-slate-100 p-3 rounded mt-2 text-sm overflow-x-auto">
+          <pre className="bg-zinc-100 p-3 rounded mt-2 text-sm overflow-x-auto">
             {executionResult.output}
           </pre>
         </div>
@@ -78,14 +78,14 @@ export default function FeedbackPanel({
 
           <div className="mb-4">
             <h3 className="font-medium">Review:</h3>
-            <p className="mt-1 text-gray-700">{feedback.review}</p>
+            <p className="mt-1 text-zinc-700">{feedback.review}</p>
           </div>
 
           <div className="mb-4">
             <h3 className="font-medium">Suggestions:</h3>
             <ul className="list-disc pl-5 mt-1 space-y-1">
               {feedback.suggestions.map((suggestion, index) => (
-                <li key={index} className="text-gray-700">
+                <li key={index} className="text-zinc-700">
                   {suggestion}
                 </li>
               ))}
@@ -95,13 +95,13 @@ export default function FeedbackPanel({
           {feedback.betterSolution && (
             <div className="mb-4">
               <h3 className="font-medium">Better Solution:</h3>
-              <pre className="bg-slate-100 p-3 rounded mt-2 text-sm overflow-x-auto">
+              <pre className="bg-zinc-100 p-3 rounded mt-2 text-sm overflow-x-auto">
                 {feedback.betterSolution}
               </pre>
               {feedback.explanation && (
                 <div className="mt-2">
                   <h4 className="font-medium">Explanation:</h4>
-                  <p className="text-gray-700">{feedback.explanation}</p>
+                  <p className="text-zinc-700">{feedback.explanation}</p>
                 </div>
               )}
             </div>

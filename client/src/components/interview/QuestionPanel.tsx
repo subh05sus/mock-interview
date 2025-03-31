@@ -25,22 +25,22 @@ export default function QuestionPanel({
     ${
       activeTab === index
         ? theme === "dark"
-          ? "bg-slate-800 text-white border-b-2 border-blue-500"
-          : "bg-white text-gray-900 border-b-2 border-blue-500"
+          ? "bg-zinc-800 text-white border-b-2 border-blue-500"
+          : "bg-white text-zinc-900 border-b-2 border-blue-500"
         : theme === "dark"
-        ? "bg-slate-700 text-gray-300 hover:bg-slate-800 hover:text-white"
-        : "bg-slate-200 text-gray-700 hover:bg-slate-300 hover:text-gray-900"
+        ? "bg-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+        : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 hover:text-zinc-900"
     }
   `;
 
   return (
     <div
       className={`w-1/2 flex flex-col ${
-        theme === "dark" ? "bg-slate-800" : "bg-white"
+        theme === "dark" ? "bg-zinc-800" : "bg-white"
       }`}
     >
       <Tab.Group onChange={setActiveTab}>
-        <Tab.List className="flex space-x-1 p-2 border-b border-gray-300 dark:border-gray-700">
+        <Tab.List className="flex space-x-1 p-2 border-b border-zinc-300 dark:border-zinc-700">
           <Tab className={({ selected }) => tabClass(selected ? 0 : -1)}>
             Description
           </Tab>
@@ -70,7 +70,7 @@ export default function QuestionPanel({
                 </div>
               </div>
 
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-zinc-500 dark:text-zinc-400">
                 Job: {job?.title}
               </div>
 
@@ -85,7 +85,7 @@ export default function QuestionPanel({
                     <div
                       key={index}
                       className={`p-3 rounded-md ${
-                        theme === "dark" ? "bg-slate-700" : "bg-slate-100"
+                        theme === "dark" ? "bg-zinc-700" : "bg-zinc-100"
                       }`}
                     >
                       <div className="font-mono whitespace-pre-wrap">
@@ -116,7 +116,7 @@ export default function QuestionPanel({
                     <div
                       key={index}
                       className={`p-3 rounded-md ${
-                        theme === "dark" ? "bg-slate-700" : "bg-slate-100"
+                        theme === "dark" ? "bg-zinc-700" : "bg-zinc-100"
                       }`}
                     >
                       <div className="font-medium">Hint {index + 1}</div>
@@ -125,7 +125,7 @@ export default function QuestionPanel({
                   ))}
                 </div>
               ) : (
-                <div className="text-gray-500 dark:text-gray-400">
+                <div className="text-zinc-500 dark:text-zinc-400">
                   No hints available for this question.
                 </div>
               )}
@@ -142,18 +142,18 @@ export default function QuestionPanel({
                     <div
                       key={index}
                       className={`p-3 rounded-md ${
-                        theme === "dark" ? "bg-slate-700" : "bg-slate-100"
+                        theme === "dark" ? "bg-zinc-700" : "bg-zinc-100"
                       }`}
                     >
                       <div className="font-medium">{related.title}</div>
-                      <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                         {related.difficulty}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-gray-500 dark:text-gray-400">
+                <div className="text-zinc-500 dark:text-zinc-400">
                   No related questions available.
                 </div>
               )}

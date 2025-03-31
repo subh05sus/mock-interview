@@ -21,7 +21,7 @@ const TestCasePanel: React.FC<TestCasePanelProps> = ({
   if (testCases.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">No test cases available</p>
+        <p className="text-zinc-500">No test cases available</p>
       </div>
     );
   }
@@ -57,7 +57,7 @@ const TestCasePanel: React.FC<TestCasePanelProps> = ({
             <Card>
               <CardContent className="p-4">
                 <h4 className="font-medium mb-2">Input</h4>
-                <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md overflow-auto text-sm">
+                <pre className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded-md overflow-auto text-sm">
                   {JSON.stringify(testCases[activeTestCase].input, null, 2)}
                 </pre>
               </CardContent>
@@ -66,7 +66,7 @@ const TestCasePanel: React.FC<TestCasePanelProps> = ({
             <Card>
               <CardContent className="p-4">
                 <h4 className="font-medium mb-2">Expected Output</h4>
-                <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md overflow-auto text-sm">
+                <pre className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded-md overflow-auto text-sm">
                   {JSON.stringify(
                     testCases[activeTestCase].expectedOutput,
                     null,
@@ -92,7 +92,7 @@ const TestCasePanel: React.FC<TestCasePanelProps> = ({
                     <div className="flex items-center space-x-4 text-sm">
                       {testResults[activeTestCase].executionTime && (
                         <div className="flex items-center">
-                          <Cpu className="h-4 w-4 mr-1 text-gray-500" />
+                          <Cpu className="h-4 w-4 mr-1 text-zinc-500" />
                           <span>
                             {testResults[activeTestCase].executionTime} s
                           </span>
@@ -100,7 +100,7 @@ const TestCasePanel: React.FC<TestCasePanelProps> = ({
                       )}
                       {testResults[activeTestCase].memoryUsed && (
                         <div className="flex items-center">
-                          <MemoryStick className="h-4 w-4 mr-1 text-gray-500" />
+                          <MemoryStick className="h-4 w-4 mr-1 text-zinc-500" />
                           <span>
                             {(
                               testResults[activeTestCase].memoryUsed / 1024
@@ -116,7 +116,7 @@ const TestCasePanel: React.FC<TestCasePanelProps> = ({
                       {testResults[activeTestCase].error}
                     </div>
                   ) : (
-                    <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md overflow-auto text-sm">
+                    <pre className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded-md overflow-auto text-sm">
                       {JSON.stringify(
                         testResults[activeTestCase].output,
                         null,
@@ -130,7 +130,7 @@ const TestCasePanel: React.FC<TestCasePanelProps> = ({
                     testResults[activeTestCase].consoleOutput.length > 0 && (
                       <div className="mt-4">
                         <h4 className="font-medium mb-2">Console Output</h4>
-                        <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md overflow-auto text-sm">
+                        <pre className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded-md overflow-auto text-sm">
                           {testResults[activeTestCase].consoleOutput.join("\n")}
                         </pre>
                       </div>

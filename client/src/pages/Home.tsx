@@ -106,7 +106,7 @@ export default function Home() {
                       Start Practicing
                       <ChevronRight
                         className={`ml-2 transition-transform duration-300 ${
-                          isHovered ? "translate-x-1" : ""
+                          isHovered ? "tranzinc-x-1" : ""
                         }`}
                       />
                     </Button>
@@ -122,7 +122,7 @@ export default function Home() {
                       Get Started
                       <ChevronRight
                         className={`ml-2 transition-transform duration-300 ${
-                          isHovered ? "translate-x-1" : ""
+                          isHovered ? "tranzinc-x-1" : ""
                         }`}
                       />
                     </Button>
@@ -137,15 +137,15 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-                <div className="bg-gray-800 px-4 py-2 flex items-center space-x-2">
+                <div className="bg-zinc-800 px-4 py-2 flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <div className="text-gray-400 text-sm ml-2">
+                  <div className="text-zinc-400 text-sm ml-2">
                     mock-interview.js
                   </div>
                 </div>
-                <div className="bg-gray-900 p-4 text-gray-300 font-mono text-sm">
+                <div className="bg-zinc-900 p-4 text-zinc-300 font-mono text-sm">
                   <pre className="whitespace-pre-wrap">
                     <code>
                       {`function twoSum(nums, target) {
@@ -170,7 +170,7 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent"></div>
       </section>
 
       {/* Features Section */}
@@ -180,7 +180,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold mb-4">
               Why Choose Our Platform?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            <p className="text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto">
               Our AI-powered mock interview system helps you prepare for
               technical interviews with real-world coding challenges and instant
               feedback.
@@ -214,12 +214,12 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gray-100 dark:bg-gray-800">
+      <section className="py-20 bg-zinc-100 dark:bg-zinc-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">
             Ready to Ace Your Next Interview?
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-zinc-600 dark:text-zinc-400 mb-8 max-w-3xl mx-auto">
             Join thousands of developers who have improved their interview
             skills with our platform.
           </p>

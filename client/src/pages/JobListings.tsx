@@ -108,18 +108,18 @@ export default function JobListings() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">Job Challenges</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-zinc-600 dark:text-zinc-400">
             Practice coding challenges for specific job roles
           </p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-8">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-4 mb-8">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 transform -tranzinc-y-1/2 text-zinc-400"
               size={18}
             />
             <Input
@@ -198,7 +198,7 @@ export default function JobListings() {
       ) : filteredJobs.length === 0 ? (
         <div className="text-center py-12">
           <h3 className="text-xl font-medium mb-2">No jobs found</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-zinc-600 dark:text-zinc-400 mb-4">
             Try adjusting your search or filter criteria
           </p>
           <Button onClick={resetFilters}>Reset Filters</Button>
@@ -228,25 +228,25 @@ export default function JobListings() {
                       {job.difficulty}
                     </Badge>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 font-medium">
+                  <p className="text-zinc-600 dark:text-zinc-400 font-medium">
                     {job.company}
                   </p>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                  <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                  <p className="text-zinc-600 dark:text-zinc-400 line-clamp-3 mb-4">
                     {job.description}
                   </p>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                      <MapPin className="h-4 w-4 mr-2 text-zinc-500" />
                       <span>{job.location}</span>
                     </div>
                     <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-2 text-gray-500" />
+                      <DollarSign className="h-4 w-4 mr-2 text-zinc-500" />
                       <span>{job.salaryRange}</span>
                     </div>
                     <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                      <Clock className="h-4 w-4 mr-2 text-zinc-500" />
                       <span>{job.jobType}</span>
                     </div>
                   </div>
@@ -255,7 +255,7 @@ export default function JobListings() {
                       <Badge
                         key={i}
                         variant="outline"
-                        className="bg-gray-100 dark:bg-gray-700"
+                        className="bg-zinc-100 dark:bg-zinc-700"
                       >
                         {skill}
                       </Badge>
@@ -263,7 +263,7 @@ export default function JobListings() {
                     {job.requiredSkills.length > 3 && (
                       <Badge
                         variant="outline"
-                        className="bg-gray-100 dark:bg-gray-700"
+                        className="bg-zinc-100 dark:bg-zinc-700"
                       >
                         +{job.requiredSkills.length - 3}
                       </Badge>

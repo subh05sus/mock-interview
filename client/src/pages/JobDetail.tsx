@@ -129,7 +129,7 @@ export default function JobDetail() {
       case "Hard":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200";
     }
   };
 
@@ -160,7 +160,7 @@ export default function JobDetail() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
               <div>
                 <h1 className="text-3xl font-bold mb-2">{job.title}</h1>
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
+                <div className="flex items-center text-zinc-600 dark:text-zinc-400">
                   <Building className="h-4 w-4 mr-1" />
                   <span className="mr-4">{job.company}</span>
                   <Badge variant="outline" className="ml-2">
@@ -189,9 +189,9 @@ export default function JobDetail() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center mb-4">
-                    <MapPin className="h-5 w-5 mr-2 text-gray-500" />
+                    <MapPin className="h-5 w-5 mr-2 text-zinc-500" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         Location
                       </p>
                       <p className="font-medium">{job.location}</p>
@@ -202,9 +202,9 @@ export default function JobDetail() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center mb-4">
-                    <DollarSign className="h-5 w-5 mr-2 text-gray-500" />
+                    <DollarSign className="h-5 w-5 mr-2 text-zinc-500" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         Salary Range
                       </p>
                       <p className="font-medium">{job.salaryRange}</p>
@@ -215,9 +215,9 @@ export default function JobDetail() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center mb-4">
-                    <Clock className="h-5 w-5 mr-2 text-gray-500" />
+                    <Clock className="h-5 w-5 mr-2 text-zinc-500" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         Job Type
                       </p>
                       <p className="font-medium">{job.jobType}</p>
@@ -262,7 +262,7 @@ export default function JobDetail() {
                   <h3 className="text-xl font-medium mb-2">
                     No challenges available
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  <p className="text-zinc-600 dark:text-zinc-400 mb-4">
                     There are no coding challenges for this job yet.
                   </p>
                   {isAdmin && (
@@ -305,7 +305,7 @@ export default function JobDetail() {
                           </div>
                         </CardHeader>
                         <CardContent className="flex-grow">
-                          <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                          <p className="text-zinc-600 dark:text-zinc-400 line-clamp-3 mb-4">
                             {question.description.substring(0, 150)}...
                           </p>
                           <div className="flex flex-wrap gap-2 mt-4">
@@ -314,7 +314,7 @@ export default function JobDetail() {
                                 <Badge
                                   key={i}
                                   variant="outline"
-                                  className="bg-gray-100 dark:bg-gray-700"
+                                  className="bg-zinc-100 dark:bg-zinc-700"
                                 >
                                   {tag}
                                 </Badge>
@@ -333,7 +333,7 @@ export default function JobDetail() {
                                   <span className="text-sm">Attempted</span>
                                 </div>
                               )}
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-zinc-500 mt-1">
                                 Last submission:{" "}
                                 {new Date(
                                   submissionStatus.date

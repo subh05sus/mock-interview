@@ -13,7 +13,7 @@ export default function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50">
       <div className="text-center">
         <h2 className="text-xl font-semibold">Authenticating...</h2>
         <div className="mt-4">

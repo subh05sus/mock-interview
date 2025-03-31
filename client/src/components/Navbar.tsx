@@ -12,7 +12,7 @@ export default function Navbar() {
   return (
     <nav
       className={`${
-        theme === "dark" ? "bg-slate-800" : "bg-slate-600"
+        theme === "dark" ? "bg-zinc-800" : "bg-zinc-600"
       } text-white shadow-md`}
     >
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -41,8 +41,8 @@ export default function Navbar() {
                 <button
                   onClick={logout}
                   className={`${
-                    theme === "dark" ? "bg-slate-700" : "bg-slate-700"
-                  } px-3 py-1 rounded hover:bg-slate-800`}
+                    theme === "dark" ? "bg-zinc-700" : "bg-zinc-700"
+                  } px-3 py-1 rounded hover:bg-zinc-800`}
                 >
                   Logout
                 </button>
@@ -53,14 +53,14 @@ export default function Navbar() {
               <Link
                 to="/login"
                 className={`${
-                  theme === "dark" ? "bg-slate-700" : "bg-slate-700"
-                } px-3 py-1 rounded hover:bg-slate-800`}
+                  theme === "dark" ? "bg-zinc-700" : "bg-zinc-700"
+                } px-3 py-1 rounded hover:bg-zinc-800`}
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="bg-white text-indigo-600 px-3 py-1 rounded hover:bg-slate-100"
+                className="bg-white text-indigo-600 px-3 py-1 rounded hover:bg-zinc-100"
               >
                 Register
               </Link>
@@ -71,7 +71,7 @@ export default function Navbar() {
           <button
             onClick={toggleTheme}
             className={`p-2 rounded-full ${
-              theme === "dark" ? "bg-slate-700" : "bg-slate-700"
+              theme === "dark" ? "bg-zinc-700" : "bg-zinc-700"
             }`}
             aria-label="Toggle theme"
           >

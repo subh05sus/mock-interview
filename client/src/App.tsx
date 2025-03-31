@@ -14,15 +14,16 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import Footer from "./components/Footer";
 
 function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
         <Router>
-          <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+          <div className="min-h-screen flex flex-col bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
             <Navbar />
-            <main>
+            <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/jobs" element={<JobListings />} />
@@ -60,6 +61,7 @@ function App() {
                 />
               </Routes>
             </main>
+            <Footer />
           </div>
           <Toaster
             position="bottom-right"

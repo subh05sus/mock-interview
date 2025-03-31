@@ -32,9 +32,9 @@ export default function LanguageSelector({
         <Menu.Button
           className={`inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium ${
             theme === "dark"
-              ? "bg-slate-700 text-white hover:bg-slate-600"
-              : "bg-white text-gray-900 hover:bg-slate-50"
-          } border border-gray-300 dark:border-gray-600`}
+              ? "bg-zinc-700 text-white hover:bg-zinc-600"
+              : "bg-white text-zinc-900 hover:bg-zinc-50"
+          } border border-zinc-300 dark:border-zinc-600`}
         >
           {currentLanguage.name}
           <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
@@ -52,7 +52,7 @@ export default function LanguageSelector({
       >
         <Menu.Items
           className={`absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none ${
-            theme === "dark" ? "bg-slate-800" : "bg-white"
+            theme === "dark" ? "bg-zinc-800" : "bg-white"
           }`}
         >
           <div className="py-1">
@@ -64,11 +64,11 @@ export default function LanguageSelector({
                     className={`${
                       active
                         ? theme === "dark"
-                          ? "bg-slate-700 text-white"
-                          : "bg-slate-100 text-gray-900"
+                          ? "bg-zinc-700 text-white"
+                          : "bg-zinc-100 text-zinc-900"
                         : theme === "dark"
-                        ? "text-gray-300"
-                        : "text-gray-700"
+                        ? "text-zinc-300"
+                        : "text-zinc-700"
                     } block w-full text-left px-4 py-2 text-sm`}
                   >
                     {lang.name}
