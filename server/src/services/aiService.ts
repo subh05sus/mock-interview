@@ -1,15 +1,46 @@
-import OpenAI from "openai";
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
+
 import type { IQuestion } from "../models/Question";
 import dotenv from "dotenv";
 
 // Load environment variables
 dotenv.config();
-// Ensure OpenAI API key is set
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OpenAI API key is not set in environment variables.");
+// Ensure Gemini API key is set
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("Gemini API key is not set in environment variables.");
 }
-// Configure OpenAI API
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Configure Gemini API
+
+const ai = new GoogleGenAI({});
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Get the Gemini Pro model
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+// Set safety settings
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+];
 
 export class AIService {
   // Generate a question based on job details and difficulty
@@ -58,20 +89,22 @@ export class AIService {
         }
       `;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert coding interview question creator.",
-          },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: prompt,
       });
+      console.log(response.text);
 
-      const content = response.choices[0].message?.content;
+      // const response = await model.generateContent({
+      //   contents: [{ role: "user", parts: [{ text: prompt }] }],
+      //   generationConfig: {
+      //     temperature: 0.7,
+      //     maxOutputTokens: 2000,
+      //   },
+      //   safetySettings,
+      // });
+
+      const content = response.text;
       if (!content) {
         throw new Error("Failed to generate question");
       }
@@ -128,21 +161,21 @@ export class AIService {
         ]
       `;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert at creating test cases for coding interview questions.",
-          },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: prompt,
       });
+      // console.log(response.text);
+      // const response = await model.generateContent({
+      //   contents: [{ role: "user", parts: [{ text: prompt }] }],
+      //   generationConfig: {
+      //     temperature: 0.7,
+      //     maxOutputTokens: 2000,
+      //   },
+      //   safetySettings,
+      // });
 
-      const content = response.choices[0].message?.content;
+      const content = response.text;
       if (!content) {
         throw new Error("Failed to generate test cases");
       }
@@ -210,20 +243,21 @@ export class AIService {
         }
       `;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert code reviewer for coding interviews.",
-          },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      });
+      // const response = await model.generateContent({
+      //   contents: [{ role: "user", parts: [{ text: prompt }] }],
+      //   generationConfig: {
+      //     temperature: 0.7,
+      //     maxOutputTokens: 2000,
+      //   },
+      //   safetySettings,
+      // });
 
-      const content = response.choices[0].message?.content;
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: prompt,
+      });
+      console.log(response.text);
+      const content = response.text;
       if (!content) {
         throw new Error("Failed to generate code review");
       }
@@ -283,21 +317,21 @@ public:
 \`\`\`
 `;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a coding assistant that generates code templates for programming questions.",
-          },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      });
+      // const response = await model.generateContent({
+      //   contents: [{ role: "user", parts: [{ text: prompt }] }],
+      //   generationConfig: {
+      //     temperature: 0.7,
+      //     maxOutputTokens: 2000,
+      //   },
+      //   safetySettings,
+      // });
 
-      const content = response.choices[0].message?.content || "";
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: prompt,
+      });
+      console.log(response.text);
+      const content = response.text || "";
 
       // Parse the response to extract templates and answer snippets
       const templates = {

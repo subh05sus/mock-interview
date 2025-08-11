@@ -11,10 +11,10 @@ import statsRoutes from "./routes/stats";
 import configurePassport from "./config/passport";
 
 // Load environment variables
-dotenv.config({ path: ".env.local" });
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 7000;
 
 // Middleware
 app.use(cors());

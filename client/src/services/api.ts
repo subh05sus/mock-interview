@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const API_URL =
-  import.meta.env.REACT_APP_API_URL || "https://jobsforce.subhadip.me/api";
+  import.meta.env.REACT_APP_API_URL || "http://localhost:7000";
 
 const api = axios.create({
   baseURL: API_URL,
