@@ -97,7 +97,7 @@ JUDGE0_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ### **Frontend (`client/.env`)**  
 ```
-REACT_APP_API_URL=https://jobsforce.subhadip.me/api
+REACT_APP_API_URL=http://localhost:5000/api
 ```
 
 ---
